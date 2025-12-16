@@ -1,0 +1,17 @@
+{
+    "legacy_addon_id": "",
+    "title": "Ranked Poll (Schulze Method)",
+    "description": "Adds ranked-choice voting to XenForo polls using the Schulze method for accurate election results",
+    "version_id": 1000000,
+    "version_string": "1.0.0 Alpha 1",
+    "dev": "Alebarda",
+    "dev_url": "",
+    "faq_url": "",
+    "support_url": "",
+    "extra_urls": {},
+    "require": {
+        "XF": "2.3.0 Alpha",
+        "php": ["7.2.0", "PHP 7.2.0+"]
+    },
+    "icon": ""
+}

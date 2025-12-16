@@ -1,0 +1,6 @@
+{
+    "path": "alebarda/rankedpoll/ranked-poll.less",
+    "title": "Ranked Poll Styles",
+    "description": "Styles for ranked-choice voting interface",
+    "addon_id": "Alebarda/RankedPoll"
+}

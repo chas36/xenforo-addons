@@ -1,0 +1,1 @@
+Ranked polls cannot have more than {max} options.

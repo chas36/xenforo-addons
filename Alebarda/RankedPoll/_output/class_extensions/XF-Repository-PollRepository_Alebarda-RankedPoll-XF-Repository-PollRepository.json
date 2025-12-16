@@ -1,0 +1,6 @@
+{
+    "from_class": "XF\\Repository\\PollRepository",
+    "to_class": "Alebarda\\RankedPoll\\XF\\Repository\\PollRepository",
+    "execute_order": 10,
+    "active": true
+}

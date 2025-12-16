@@ -1,0 +1,113 @@
+<xf:comment>
+	Ranked Poll Results Display
+	Shows Schulze method winner and full ranking
+</xf:comment>
+
+<div class="block">
+	<div class="block-container">
+		<h2 class="block-header">
+			<xf:if is="$poll.question">
+				{$poll.question} - Results
+			<xf:else />
+				Poll Results
+			</xf:if>
+		</h2>
+
+		<div class="block-body">
+			<xf:if is="$poll.canViewRankedResults()">
+				<xf:if is="$schulzeResults">
+					<xf:comment>Winner Display</xf:comment>
+					<div class="pollResults-winner">
+						<xf:if is="$schulzeResults.winner">
+							<xf:set var="$winnerResponse" value="{$poll.Responses.{$schulzeResults.winner}}" />
+							<div class="blockMessage blockMessage--success blockMessage--iconic">
+								<h3 style="margin: 0;">
+									<i class="fa fa-trophy"></i> Winner: {$winnerResponse.response}
+								</h3>
+							</div>
+						<xf:else />
+							<div class="blockMessage blockMessage--important blockMessage--iconic">
+								<h3 style="margin: 0;">
+									<i class="fa fa-balance-scale"></i> No clear winner (tie)
+								</h3>
+							</div>
+						</xf:if>
+					</div>
+
+					<xf:comment>Full Ranking</xf:comment>
+					<div class="pollResults-ranking">
+						<h3 class="block-minorHeader">Complete Ranking</h3>
+						<ol class="pollResults-list">
+							<xf:foreach loop="$schulzeResults.ranking" key="$responseId" value="$position">
+								<xf:set var="$rankedResponse" value="{$poll.Responses.{$responseId}}" />
+								<li class="pollResults-item pollResults-item--position{$position}">
+									<span class="pollResults-position">#{$position}</span>
+									<span class="pollResults-text">{$rankedResponse.response}</span>
+									<xf:if is="$responseId == $schulzeResults.winner">
+										<span class="pollResults-badge pollResults-badge--winner">
+											<i class="fa fa-trophy"></i> Winner
+										</span>
+									</xf:if>
+								</li>
+							</xf:foreach>
+						</ol>
+					</div>
+
+					<xf:comment>Voter Count</xf:comment>
+					<div class="pollResults-stats">
+						<div class="pollResults-stat">
+							<i class="fa fa-users"></i>
+							<strong>{$poll.voter_count|number}</strong>
+							<xf:if is="$poll.voter_count == 1">
+								voter
+							<xf:else />
+								voters
+							</xf:if>
+						</div>
+					</div>
+
+					<xf:comment>Detailed Results (Expandable)</xf:comment>
+					<div class="pollResults-details">
+						<a href="#" class="pollResults-toggleDetails" data-xf-init="toggle" data-target="#pollDetailsContent">
+							<i class="fa fa-chevron-down"></i> Show detailed analysis
+						</a>
+
+						<div id="pollDetailsContent" style="display: none; margin-top: 1em;">
+							<h4>Pairwise Preferences Matrix</h4>
+							<p class="pollResults-matrixDescription">
+								This matrix shows how many voters preferred each option over another.
+								Row option is preferred over column option by the number shown.
+							</p>
+
+							<div class="pollResults-matrix" style="overflow-x: auto;">
+								<p><em>Detailed preference matrix available in future update.</em></p>
+							</div>
+
+							<div class="pollResults-methodInfo" style="margin-top: 1em; padding: 1em; background: #f0f0f0; border-radius: 4px;">
+								<h4>About the Schulze Method</h4>
+								<p>
+									This poll uses the <strong>Schulze method</strong> (also known as Beatpath)
+									for ranked-choice voting. This method finds the Condorcet winner—the option
+									that would win in a head-to-head matchup against every other option. It's
+									resistant to strategic voting and the "spoiler effect."
+								</p>
+							</div>
+						</div>
+					</div>
+
+				<xf:else />
+					<div class="blockMessage blockMessage--important">
+						No results available yet. Waiting for votes to be cast.
+					</div>
+				</xf:if>
+
+			<xf:else />
+				<div class="blockMessage blockMessage--important">
+					Results will be shown after the poll closes.
+				</div>
+			</xf:if>
+		</div>
+	</div>
+</div>
+
+<xf:css src="alebarda/rankedpoll/ranked-poll.less" />
