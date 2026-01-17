@@ -332,19 +332,23 @@
 // ============================================
 
 .rankedPoll-matrixWrapper {
+	display: block;
+	max-width: 100%;
 	overflow-x: auto;
-	overflow-y: visible;
-	margin: 0 -@xf-paddingMedium;
-	padding: 0 @xf-paddingMedium;
+	overflow-y: hidden;
+	margin: 0;
+	padding: 0;
+	-webkit-overflow-scrolling: touch;
 
 	@media (max-width: @xf-responsiveMedium) {
-		margin: 0 -@xf-paddingSmall;
-		padding: 0 @xf-paddingSmall;
+		margin: 0;
+		padding: 0;
 	}
 }
 
 .rankedPoll-matrix {
 	min-width: 100%;
+	width: max-content;
 	white-space: nowrap;
 
 	th, td {

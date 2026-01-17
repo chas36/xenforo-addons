@@ -154,7 +154,7 @@ class RankedPoll extends AbstractController
             'require_all_ranked' => $input['require_all_ranked'],
         ]);
 
-        // Конвертировать даты
+        // Конвертировать даты (с учетом времени, если указано)
         if ($input['open_date']) {
             $openDate = strtotime($input['open_date']);
             $poll->open_date = $openDate ?: null;

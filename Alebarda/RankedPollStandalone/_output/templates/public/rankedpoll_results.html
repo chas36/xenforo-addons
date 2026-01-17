@@ -31,11 +31,11 @@
 						<div class="contentRow">
 							<div class="contentRow-figure">
 								<xf:if is="$position == 0">
-									<i class="fa fa-medal fa-2x" style="color: gold;" title="{{ phrase('first_place') }}"></i>
+									<xf:fa icon="trophy" size="2x" style="color: gold;" title="{{ phrase('first_place') }}" />
 								<xf:elseif is="$position == 1" />
-									<i class="fa fa-medal fa-2x" style="color: silver;" title="{{ phrase('second_place') }}"></i>
+									<xf:fa icon="star" size="2x" style="color: silver;" title="{{ phrase('second_place') }}" />
 								<xf:elseif is="$position == 2" />
-									<i class="fa fa-medal fa-2x" style="color: #cd7f32;" title="{{ phrase('third_place') }}"></i>
+									<xf:fa icon="star" size="2x" style="color: #cd7f32;" title="{{ phrase('third_place') }}" />
 								<xf:else />
 									<strong style="font-size: 1.5em; color: #888;">#{{ $position + 1 }}</strong>
 								</xf:if>
@@ -49,10 +49,11 @@
 									</div>
 								</xf:if>
 
-								<xf:if is="$poll.winner_mode == 'seat_allocation' AND $results.allocation.allocations.{$optionId}">
+								<xf:set var="$seatsWon" value="{$results.allocation.allocations.{$optionId}}" />
+								<xf:if is="$poll.winner_mode == 'seat_allocation' AND $seatsWon">
 									<div class="contentRow-snippet">
 										{{ phrase('alebarda_rankedpoll_seats_won', {
-											'seats': $results.allocation.allocations.{$optionId},
+											'seats': $seatsWon,
 											'total': $poll.winner_count
 										}) }}
 									</div>
