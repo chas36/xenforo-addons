@@ -20,9 +20,12 @@ use XF\Mvc\Entity\Structure;
  * @property bool $show_voter_list
  * @property bool $allow_vote_change
  * @property bool $require_all_ranked
+ * @property string $winner_mode
+ * @property int $winner_count
  * @property int $voter_count
  * @property int $view_count
  * @property string|null $cached_results
+ * @property array|null $allocation_results
  * @property int|null $results_cache_date
  *
  * RELATIONS
@@ -114,7 +117,79 @@ class Poll extends Entity
     public function invalidateResultsCache()
     {
         $this->cached_results = null;
+        $this->allocation_results = null;
         $this->results_cache_date = null;
+    }
+
+    /**
+     * Получить результаты распределения мандатов
+     */
+    public function getAllocationResults()
+    {
+        return $this->allocation_results ?: [];
+    }
+
+    /**
+     * Установить результаты распределения мандатов
+     */
+    public function setAllocationResults(array $results)
+    {
+        $this->allocation_results = $results ?: null;
+    }
+
+    /**
+     * Проверка, используется ли режим множественных победителей
+     */
+    public function hasMultipleWinners()
+    {
+        return in_array($this->winner_mode, ['top_n', 'seat_allocation'], true);
+    }
+
+    /**
+     * Получить массив ID победителей
+     */
+    public function getWinnerIds()
+    {
+        $results = $this->getCachedResults();
+        if (!$results) {
+            return [];
+        }
+
+        if ($this->winner_mode === 'single') {
+            return $results['winner_id'] ? [$results['winner_id']] : [];
+        }
+
+        if ($this->winner_mode === 'top_n') {
+            return array_slice($results['ranking'], 0, $this->winner_count);
+        }
+
+        if ($this->winner_mode === 'seat_allocation') {
+            $allocation = $this->getAllocationResults();
+            return array_keys($allocation['allocations'] ?? []);
+        }
+
+        return [];
+    }
+
+    /**
+     * Валидация перед сохранением
+     */
+    protected function _preSave()
+    {
+        parent::_preSave();
+
+        if ($this->winner_mode === 'single') {
+            $this->winner_count = 1;
+        } elseif ($this->winner_mode === 'top_n') {
+            $optionCount = $this->Options ? $this->Options->count() : 0;
+            if ($optionCount && $this->winner_count > $optionCount) {
+                $this->error(\XF::phrase('alebarda_rankedpoll_winner_count_exceeds_options'));
+            }
+        } elseif ($this->winner_mode === 'seat_allocation') {
+            if ($this->winner_count < 1) {
+                $this->error(\XF::phrase('alebarda_rankedpoll_seat_count_minimum'));
+            }
+        }
     }
 
     /**
@@ -331,6 +406,9 @@ class Poll extends Entity
                 'allowedValues' => ['draft', 'open', 'closed']],
             'results_visibility' => ['type' => self::STR, 'default' => 'after_close',
                 'allowedValues' => ['realtime', 'after_vote', 'after_close', 'never']],
+            'winner_mode' => ['type' => self::STR, 'default' => 'single',
+                'allowedValues' => ['single', 'top_n', 'seat_allocation']],
+            'winner_count' => ['type' => self::UINT, 'default' => 1, 'min' => 1, 'max' => 100],
             'allowed_user_groups' => ['type' => self::STR, 'nullable' => true, 'default' => null],
             'show_voter_list' => ['type' => self::BOOL, 'default' => true],
             'allow_vote_change' => ['type' => self::BOOL, 'default' => true],
@@ -338,6 +416,7 @@ class Poll extends Entity
             'voter_count' => ['type' => self::UINT, 'default' => 0],
             'view_count' => ['type' => self::UINT, 'default' => 0],
             'cached_results' => ['type' => self::STR, 'nullable' => true, 'default' => null],
+            'allocation_results' => ['type' => self::JSON_ARRAY, 'nullable' => true, 'default' => null],
             'results_cache_date' => ['type' => self::UINT, 'nullable' => true, 'default' => null],
         ];
 

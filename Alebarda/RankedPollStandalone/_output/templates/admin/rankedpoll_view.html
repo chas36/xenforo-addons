@@ -56,35 +56,52 @@
 	<div class="block-container">
 		<h2 class="block-header">{{ phrase('results') }}</h2>
 		<div class="block-body">
-			<xf:if is="$results.winner_id">
-				<div class="block-row block-row--highlighted">
-					<div class="contentRow">
-						<div class="contentRow-figure">
-							<i class="fa fa-trophy fa-2x" style="color: gold;"></i>
-						</div>
-						<div class="contentRow-main">
-							<h3 class="contentRow-title">
-								{{ phrase('winner') }}: {$optionNames.{$results.winner_id}}
-							</h3>
-							<div class="contentRow-snippet">
-								{{ phrase('alebarda_rankedpoll_condorcet_winner') }}
-							</div>
-						</div>
-					</div>
-				</div>
-
+			<xf:if is="$results.ranking">
 				<div class="block-row">
-					<h3 class="block-minorHeader">{{ phrase('final_ranking') }}</h3>
+					<h3 class="block-minorHeader">
+						<xf:if is="$poll.winner_mode == 'single'">
+							{{ phrase('winner') }}
+						<xf:elseif is="$poll.winner_mode == 'top_n'" />
+							{{ phrase('alebarda_rankedpoll_top_winners', {'count': $poll.winner_count}) }}
+						<xf:elseif is="$poll.winner_mode == 'seat_allocation'" />
+							{{ phrase('alebarda_rankedpoll_seat_distribution', {'count': $poll.winner_count}) }}
+						</xf:if>
+					</h3>
 				</div>
 
 				<xf:foreach loop="$results.ranking" value="$optionId" key="$position">
-					<div class="block-row block-row--separated">
+					<xf:set var="$isWinner" value="{{ in_array($optionId, $results.winners) }}" />
+
+					<div class="block-row block-row--separated {{ $isWinner ? 'block-row--highlighted' : '' }}">
 						<div class="contentRow">
 							<div class="contentRow-figure">
-								<strong style="font-size: 1.5em; color: #888;">#{{ $position + 1 }}</strong>
+								<xf:if is="$position == 0">
+									<i class="fa fa-medal fa-2x" style="color: gold;" title="{{ phrase('first_place') }}"></i>
+								<xf:elseif is="$position == 1" />
+									<i class="fa fa-medal fa-2x" style="color: silver;" title="{{ phrase('second_place') }}"></i>
+								<xf:elseif is="$position == 2" />
+									<i class="fa fa-medal fa-2x" style="color: #cd7f32;" title="{{ phrase('third_place') }}"></i>
+								<xf:else />
+									<strong style="font-size: 1.5em; color: #888;">#{{ $position + 1 }}</strong>
+								</xf:if>
 							</div>
 							<div class="contentRow-main">
 								<h4 class="contentRow-title">{$optionNames.{$optionId}}</h4>
+
+								<xf:if is="$poll.winner_mode == 'single' AND $isWinner">
+									<div class="contentRow-snippet">
+										{{ phrase('alebarda_rankedpoll_condorcet_winner') }}
+									</div>
+								</xf:if>
+
+								<xf:if is="$poll.winner_mode == 'seat_allocation' AND $results.allocation.allocations.{$optionId}">
+									<div class="contentRow-snippet">
+										{{ phrase('alebarda_rankedpoll_seats_won', {
+											'seats': $results.allocation.allocations.{$optionId},
+											'total': $poll.winner_count
+										}) }}
+									</div>
+								</xf:if>
 							</div>
 						</div>
 					</div>
@@ -124,6 +141,37 @@
 										<td class="dataList-cell--min">
 											<strong>{{ $option.times_ranked_first }}</strong> / {$poll.voter_count}
 										</td>
+									</tr>
+								</xf:foreach>
+							</tbody>
+						</table>
+					</div>
+				</xf:if>
+
+				<xf:if is="$poll.winner_mode == 'seat_allocation' AND $results.allocation.details">
+					<div class="block-row">
+						<h3 class="block-minorHeader">{{ phrase('alebarda_rankedpoll_allocation_details') }}</h3>
+					</div>
+
+					<div class="block-row">
+						<table class="dataList dataList--compact">
+							<thead>
+								<tr>
+									<th>{{ phrase('alebarda_rankedpoll_seat_number') }}</th>
+									<th>{{ phrase('option') }}</th>
+									<th>{{ phrase('alebarda_rankedpoll_first_choice_votes') }}</th>
+									<th>{{ phrase('alebarda_rankedpoll_divisor') }}</th>
+									<th>{{ phrase('alebarda_rankedpoll_quotient') }}</th>
+								</tr>
+							</thead>
+							<tbody>
+								<xf:foreach loop="$results.allocation.details" value="$detail">
+									<tr>
+										<td>#{$detail.seat}</td>
+										<td>{$optionNames.{$detail.option_id}}</td>
+										<td>{$detail.votes}</td>
+										<td>{$detail.divisor}</td>
+										<td>{{ number_format($detail.quotient, 2) }}</td>
 									</tr>
 								</xf:foreach>
 							</tbody>

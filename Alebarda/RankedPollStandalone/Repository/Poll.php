@@ -314,6 +314,17 @@ class Poll extends Repository
         if ($useCache) {
             $cached = $poll->getCachedResults();
             if ($cached !== null) {
+                if (!isset($cached['winners'])) {
+                    if ($poll->winner_mode === 'single') {
+                        $cached['winners'] = $cached['winner_id'] ? [$cached['winner_id']] : [];
+                    } elseif ($poll->winner_mode === 'top_n') {
+                        $cached['winners'] = array_slice($cached['ranking'] ?? [], 0, $poll->winner_count);
+                    } elseif ($poll->winner_mode === 'seat_allocation') {
+                        $allocation = $poll->getAllocationResults();
+                        $cached['allocation'] = $allocation;
+                        $cached['winners'] = array_keys($allocation['allocations'] ?? []);
+                    }
+                }
                 return $cached;
             }
         }
@@ -322,8 +333,12 @@ class Poll extends Repository
         $votes = $this->getAllVotes($poll);
 
         if (empty($votes)) {
+            $poll->allocation_results = null;
+            $poll->saveIfChanged();
+
             return [
                 'winner_id' => null,
+                'winners' => [],
                 'ranking' => [],
                 'pairwise_matrix' => [],
                 'strongest_paths' => []
@@ -337,6 +352,28 @@ class Poll extends Repository
         /** @var \Alebarda\RankedPollStandalone\Voting\Schulze $schulze */
         $schulze = new \Alebarda\RankedPollStandalone\Voting\Schulze();
         $results = $schulze->calculateWinner($votes, $optionIds);
+
+        switch ($poll->winner_mode) {
+            case 'single':
+                $results['winners'] = $results['winner_id'] ? [$results['winner_id']] : [];
+                $poll->allocation_results = null;
+                break;
+            case 'top_n':
+                $results['winners'] = array_slice($results['ranking'], 0, $poll->winner_count);
+                $poll->allocation_results = null;
+                break;
+            case 'seat_allocation':
+                $sainteLague = new \Alebarda\RankedPollStandalone\Voting\SainteLague();
+                $allocation = $sainteLague->allocateSeats(
+                    $votes,
+                    $results['ranking'],
+                    $poll->winner_count
+                );
+                $results['allocation'] = $allocation;
+                $results['winners'] = array_keys($allocation['allocations']);
+                $poll->setAllocationResults($allocation);
+                break;
+        }
 
         // Сохранить в кэш
         $poll->setCachedResults($results);

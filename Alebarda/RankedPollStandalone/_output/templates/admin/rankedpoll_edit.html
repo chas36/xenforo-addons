@@ -6,7 +6,7 @@
 	</xf:if>
 </xf:title>
 
-<xf:form action="{{ link('ranked-polls/save', $poll) }}" class="block" ajax="true">
+<xf:form action="{{ link('ranked-polls/save', $poll) }}" class="block" ajax="true" id="pollEditForm">
 	<div class="block-container">
 		<xf:csrf />
 		<h2 class="block-header">
@@ -67,6 +67,28 @@
 			</xf:formrow>
 
 			<!-- Статус -->
+			<hr class="formRowSep" />
+
+			<xf:formrow label="{{ phrase('alebarda_rankedpoll_winner_mode') }}">
+				<xf:radio name="winner_mode" value="{$poll.winner_mode}">
+					<xf:option value="single" label="{{ phrase('alebarda_rankedpoll_winner_mode_single') }}">
+						<xf:hint>{{ phrase('alebarda_rankedpoll_winner_mode_single_hint') }}</xf:hint>
+					</xf:option>
+					<xf:option value="top_n" label="{{ phrase('alebarda_rankedpoll_winner_mode_top_n') }}">
+						<xf:hint>{{ phrase('alebarda_rankedpoll_winner_mode_top_n_hint') }}</xf:hint>
+					</xf:option>
+					<xf:option value="seat_allocation" label="{{ phrase('alebarda_rankedpoll_winner_mode_allocation') }}">
+						<xf:hint>{{ phrase('alebarda_rankedpoll_winner_mode_allocation_hint') }}</xf:hint>
+					</xf:option>
+				</xf:radio>
+			</xf:formrow>
+
+			<xf:formrow label="{{ phrase('alebarda_rankedpoll_winner_count') }}"
+				rowclass="js-winnerCountRow"
+				explain="{{ phrase('alebarda_rankedpoll_winner_count_explain') }}">
+				<xf:numberbox name="winner_count" value="{$poll.winner_count}" min="1" max="100" />
+			</xf:formrow>
+
 			<hr class="formRowSep" />
 
 			<xf:radiorow name="poll_status" value="{$poll.poll_status}" label="{{ phrase('status') }}:">
@@ -205,4 +227,29 @@ function removeOption(button) {
 
 	button.closest('.inputGroup').remove();
 }
+
+function updateWinnerCountVisibility() {
+	const form = document.getElementById('pollEditForm');
+	const winnerModeRadios = form.querySelectorAll('input[name="winner_mode"]');
+	const winnerCountRow = form.querySelector('.js-winnerCountRow');
+	let mode = 'single';
+
+	winnerModeRadios.forEach((radio) => {
+		if (radio.checked) {
+			mode = radio.value;
+		}
+	});
+
+	if (mode === 'single') {
+		winnerCountRow.style.display = 'none';
+	} else {
+		winnerCountRow.style.display = '';
+	}
+}
+
+document.querySelectorAll('input[name="winner_mode"]').forEach((radio) => {
+	radio.addEventListener('change', updateWinnerCountVisibility);
+});
+
+updateWinnerCountVisibility();
 </script>

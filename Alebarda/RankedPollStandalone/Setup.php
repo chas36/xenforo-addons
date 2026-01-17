@@ -40,6 +40,12 @@ class Setup extends AbstractSetup
             // Статус
             $table->addColumn('poll_status', 'enum')->values(['draft', 'open', 'closed'])->setDefault('draft');
 
+            // Режим определения победителей
+            $table->addColumn('winner_mode', 'enum')
+                ->values(['single', 'top_n', 'seat_allocation'])
+                ->setDefault('single');
+            $table->addColumn('winner_count', 'tinyint')->unsigned()->setDefault(1);
+
             // Видимость результатов
             $table->addColumn('results_visibility', 'enum')
                 ->values(['realtime', 'after_vote', 'after_close', 'never'])
@@ -59,6 +65,7 @@ class Setup extends AbstractSetup
 
             // Кэш результатов
             $table->addColumn('cached_results', 'mediumtext')->nullable()->comment('JSON с результатами Schulze');
+            $table->addColumn('allocation_results', 'mediumtext')->nullable()->comment('JSON с распределением мандатов');
             $table->addColumn('results_cache_date', 'int')->nullable();
 
             $table->addPrimaryKey('poll_id');
@@ -122,5 +129,22 @@ class Setup extends AbstractSetup
         $sm->dropTable('xf_alebarda_rankedpoll_vote');
         $sm->dropTable('xf_alebarda_rankedpoll_option');
         $sm->dropTable('xf_alebarda_rankedpoll');
+    }
+
+    public function upgrade2010370Step1()
+    {
+        $this->schemaManager()->alterTable('xf_alebarda_rankedpoll', function(Alter $table) {
+            $table->addColumn('winner_mode', 'enum')
+                ->values(['single', 'top_n', 'seat_allocation'])
+                ->setDefault('single')
+                ->after('poll_status');
+            $table->addColumn('winner_count', 'tinyint')
+                ->unsigned()
+                ->setDefault(1)
+                ->after('winner_mode');
+            $table->addColumn('allocation_results', 'mediumtext')
+                ->nullable()
+                ->after('cached_results');
+        });
     }
 }
