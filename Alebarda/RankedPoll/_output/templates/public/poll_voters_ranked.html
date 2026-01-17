@@ -1,0 +1,59 @@
+<xf:title>{{ phrase('voters') }}: {{ $poll.question }}</xf:title>
+
+<div class="block">
+	<div class="block-container">
+		<div class="block-header">
+			<div class="block-header-content">
+				<h3 class="block-minorHeader">
+					{{ phrase('users_who_voted') }} ({{ $voters|count }})
+				</h3>
+			</div>
+		</div>
+
+		<div class="block-body">
+			<xf:if is="$voters">
+				<div class="structItemContainer">
+					<xf:foreach loop="$voters" value="$voter">
+						<div class="structItem structItem--middle">
+							<div class="structItem-cell structItem-cell--icon">
+								<div class="structItem-iconContainer">
+									<xf:avatar user="{{ $voter }}" size="s" />
+								</div>
+							</div>
+							<div class="structItem-cell structItem-cell--main">
+								<div class="structItem-title">
+									<xf:username user="{{ $voter }}" />
+								</div>
+								<div class="structItem-minor">
+									<ul class="structItem-parts">
+										<li>
+											<xf:date time="{{ $voter.vote_date }}" />
+										</li>
+									</ul>
+								</div>
+							</div>
+						</div>
+					</xf:foreach>
+				</div>
+			<xf:else />
+				<div class="block-row">
+					<div class="blockMessage blockMessage--none">
+						{{ phrase('no_votes_have_been_cast') }}
+					</div>
+				</div>
+			</xf:if>
+		</div>
+
+		<div class="block-footer">
+			<a href="{{ link('ranked-polls/results', $poll) }}" class="button button--link">
+				{{ phrase('view_results') }}
+			</a>
+
+			<xf:if is="$content">
+				<a href="{{ link('threads', $content) }}" class="button">
+					{{ phrase('back_to_thread') }}
+				</a>
+			</xf:if>
+		</div>
+	</div>
+</div>

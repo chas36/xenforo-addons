@@ -1,0 +1,9 @@
+{
+    "template": "poll_macros",
+    "description": "Add ranked-choice voting option to poll creation form",
+    "execution_order": 10,
+    "enabled": true,
+    "action": "str_replace",
+    "find": "<xf:checkboxrow label=\"{{ phrase('options') }}\" rowtype=\"{$rowType}\">",
+    "replace": "<xf:checkboxrow label=\"{{ phrase('options') }}\" rowtype=\"{$rowType}\">\n\t\t<xf:option name=\"poll[enable_ranked_voting]\" value=\"1\" label=\"{{ phrase('alebarda_rankedpoll_enable_ranked_voting') }}\">\n\t\t\t<xf:hint>{{ phrase('alebarda_rankedpoll_enable_ranked_voting_hint') }}</xf:hint>\n\t\t</xf:option>"
+}

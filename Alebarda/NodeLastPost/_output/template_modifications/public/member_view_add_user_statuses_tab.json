@@ -1,0 +1,9 @@
+{
+    "template": "member_view",
+    "description": "Add user statuses tab to member profile tabs",
+    "execution_order": 20,
+    "enabled": true,
+    "action": "preg_replace",
+    "find": "#(<!--\\[XF:tabs:end\\]-->)#",
+    "replace": "\t\t\t\t<a href=\"{{ link('members/statuses', $user) }}\"\n\t\t\t\t\tclass=\"tabs-tab{{ $selectedTab == 'user_statuses' ? ' is-active' : '' }}\"\n\t\t\t\t\tid=\"user-statuses\"\n\t\t\t\t\trole=\"tab\">{{ phrase('alebarda_node_last_post_statuses_tab') }}</a>\n\\1"
+}

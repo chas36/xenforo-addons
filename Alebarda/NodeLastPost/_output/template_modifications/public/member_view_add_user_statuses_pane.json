@@ -1,0 +1,9 @@
+{
+    "template": "member_view",
+    "description": "Add user statuses pane to member profile",
+    "execution_order": 20,
+    "enabled": true,
+    "action": "preg_replace",
+    "find": "#(<!--\\[XF:tab_panes:end\\]-->)#",
+    "replace": "\t<li data-href=\"{{ link('members/statuses', $user) }}\"\n\t\trole=\"tabpanel\"\n\t\taria-labelledby=\"user-statuses\"\n\t\tclass=\"{{ $selectedTab == 'user_statuses' ? 'is-active' : '' }}\">\n\t\t<div class=\"blockMessage\">{{ phrase('loading...') }}</div>\n\t</li>\n\\1"
+}

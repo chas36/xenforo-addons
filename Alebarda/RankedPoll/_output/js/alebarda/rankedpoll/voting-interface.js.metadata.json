@@ -1,7 +1,0 @@
-{
-    "path": "alebarda/rankedpoll/voting-interface.js",
-    "title": "Ranked Poll Voting Interface",
-    "description": "Drag-and-drop voting interface for ranked polls",
-    "addon_id": "Alebarda/RankedPoll",
-    "minified": false
-}

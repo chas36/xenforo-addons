@@ -1,0 +1,301 @@
+# RankedPollStandalone - Ranked-Choice Voting для XenForo
+
+Полнофункциональная система ranked-choice voting (голосования с ранжированием) по методу Шульце для XenForo 2.3+.
+
+## Возможности
+
+### ✅ Полный функционал опросов
+- **Создание опросов** через удобную админку
+- **Голосование с ранжированием** (ranked-choice voting)
+- **Метод Шульце** для подсчёта результатов (Condorcet winner)
+- **BB Code интеграция** - вставка опросов в любые сообщения: `[rankedpoll=ID]`
+
+### ✅ Контроль доступа
+- **Ограничение по группам** пользователей
+- **Временные рамки** - настройка open_date и close_date
+- **Видимость результатов**:
+  - Realtime (всегда видны)
+  - After vote (после голосования)
+  - After close (после закрытия)
+  - Never (только админы)
+
+### ✅ Безопасность
+- **HMAC signature** для защиты от подделки
+- **Server-side rendering** - все параметры из БД
+- **Проверка прав** на каждом этапе
+- Невозможность манипуляции через HTML/JS
+
+### ✅ Дополнительные функции
+- **Список голосовавших** (без раскрытия их выбора)
+- **Изменение голоса** (опционально)
+- **Кэширование результатов** для производительности
+- **Адаптивный дизайн** для мобильных устройств
+- **Админ‑просмотр**: результаты, список голосовавших, удаление голосов пользователя
+- **Drag‑and‑drop ранжирование** в публичной форме
+- **Countdown таймеры** до открытия/закрытия
+- **Наглядные графики** (доля первых выборов)
+
+## Использование
+
+### BB Code в сообщениях
+
+```
+Друзья, голосуем за лучший язык программирования!
+
+[rankedpoll=123]
+
+Жду ваши голоса!
+```
+
+Опрос автоматически отобразится как интерактивный блок с кнопками для голосования и просмотра результатов.
+
+### Создание опроса
+
+1. Перейти в **Admin Panel → Forums → Ranked polls**
+2. Нажать **"Add ranked poll"**
+3. Заполнить форму:
+   - Заголовок и описание
+   - Минимум 2 варианта ответа
+   - Статус (Draft/Open/Closed)
+   - Настройки доступа и видимости
+4. Сохранить
+5. Скопировать ID и вставить в BB code: `[rankedpoll=ID]`
+
+### Голосование
+
+Пользователи ранжируют варианты ответов от 1 (лучший) до N:
+- 1 = первый выбор
+- 2 = второй выбор
+- 3 = третий выбор
+- и т.д.
+
+Можно не ранжировать все варианты (если не требуется в настройках).
+
+В публичной форме доступен **drag‑and‑drop**: перетащите варианты в список ранжирования.
+
+### Результаты
+
+После закрытия опроса (или в реальном времени - зависит от настроек) показываются:
+- **Победитель** (Condorcet winner)
+- **Финальное ранжирование** всех вариантов
+- **Pairwise comparison matrix** - попарные сравнения
+- **Статистика** голосования
+- **Доля первых выборов** (наглядные бары)
+
+### Админ‑просмотр
+
+В админке у каждого опроса есть **View**, где отображаются:
+- текущие результаты и финальный рейтинг
+- pairwise matrix
+- список проголосовавших
+- кнопка **Удалить голос(а)** для выбранного пользователя с пересчётом результатов
+
+## Метод Шульце
+
+Метод Шульце - это Condorcet-совместимый алгоритм для определения победителя:
+
+1. **Pairwise comparison** - сравнение каждой пары кандидатов
+2. **Strongest paths** - вычисление самых сильных путей (Floyd-Warshall)
+3. **Condorcet winner** - кандидат, побеждающий всех остальных
+
+Подробнее: https://en.wikipedia.org/wiki/Schulze_method
+
+## Установка
+
+1. Скопировать папку `Alebarda/RankedPollStandalone` в `/src/addons/`
+2. В админке: **Add-ons → Install from archive** или **Install add-on** (если dev mode)
+3. Установить аддон
+4. Готово!
+
+Если после установки BB‑код не появился, выполните:
+```
+php cmd.php xf-addon:rebuild Alebarda/RankedPollStandalone
+```
+
+## Структура
+
+```
+Alebarda/RankedPollStandalone/
+├── addon.json              # Метаданные аддона
+├── Setup.php               # Миграции БД
+│
+├── Entity/                 # Entity классы
+│   ├── Poll.php           # Опрос
+│   ├── PollOption.php     # Вариант ответа
+│   └── PollVote.php       # Голос
+│
+├── Repository/
+│   └── Poll.php           # Работа с опросами
+│
+├── Voting/
+│   └── Schulze.php        # Алгоритм Шульце
+│
+├── BbCode/
+│   └── RankedPoll.php     # BB Code renderer
+│
+├── Pub/Controller/
+│   └── Poll.php           # Публичный контроллер
+│
+├── Admin/Controller/
+│   └── RankedPoll.php     # Админ контроллер
+│
+└── _output/               # XenForo конфигурация
+    ├── bb_code/          # BB Code регистрация
+    ├── routes/           # Роуты
+    ├── templates/        # Шаблоны
+    ├── phrases/          # Переводы
+    └── css/              # Стили
+```
+
+## База данных
+
+### Таблицы
+
+- `xf_alebarda_rankedpoll` - Опросы
+- `xf_alebarda_rankedpoll_option` - Варианты ответов
+- `xf_alebarda_rankedpoll_vote` - Голоса пользователей
+- `xf_alebarda_rankedpoll_voter` - Список проголосовавших
+
+## API (роуты)
+
+### Публичные
+- `GET /ranked-polls/{id}` - Просмотр опроса / голосование
+- `POST /ranked-polls/{id}/vote` - Отправка голоса
+- `GET /ranked-polls/{id}/results` - Результаты
+- `GET /ranked-polls/{id}/voters` - Список голосовавших
+
+### Админка
+- `GET /admin.php?ranked-polls` - Список опросов
+- `GET /admin.php?ranked-polls/add` - Создать опрос
+- `GET /admin.php?ranked-polls/edit/{id}` - Редактировать
+- `GET /admin.php?ranked-polls/view/{id}` - Админ‑просмотр (результаты/голосовавшие)
+- `POST /admin.php?ranked-polls/save/{id}` - Сохранить
+- `POST /admin.php?ranked-polls/delete/{id}` - Удалить
+- `POST /admin.php?ranked-polls/remove-voter/{id}` - Удалить голос(а) пользователя
+- `GET /admin.php?ranked-polls/close/{id}` - Закрыть
+- `GET /admin.php?ranked-polls/open/{id}` - Открыть
+
+## Требования
+
+- XenForo 2.3.0+
+- PHP 7.2.0+
+
+## Лицензия
+
+Проприетарное ПО. Все права защищены.
+
+## Автор
+
+Alebarda (Неделько Алексей)
+
+## Поддержка
+
+Вопросы и предложения: https://politsim.ru
+
+---
+
+## Техническая документация
+
+### Для разработчиков
+
+#### Entity методы
+
+**Poll Entity**:
+- `isOpen()` - Проверка: открыт ли опрос
+- `isClosed()` - Проверка: закрыт ли опрос
+- `canView()` - Может ли пользователь видеть
+- `canVote()` - Может ли голосовать
+- `canViewResults()` - Может ли смотреть результаты
+- `hasVoted($userId)` - Проголосовал ли пользователь
+- `getUserVotes($userId)` - Получить голоса пользователя
+- `getCachedResults()` - Получить кэшированные результаты
+
+#### Repository методы
+
+**Poll Repository**:
+- `getAllVotes($poll)` - Все голоса для расчёта
+- `castVote($poll, $userId, $rankings)` - Сохранить голос
+- `calculateResults($poll, $useCache)` - Подсчитать результаты
+- `removeUserVotes($poll, $userId)` - Удалить голоса пользователя
+- `closePoll($poll)` - Закрыть опрос
+- `openPoll($poll)` - Открыть опрос
+
+#### Schulze класс
+
+```php
+$schulze = new \Alebarda\RankedPollStandalone\Voting\Schulze();
+
+$votes = [
+    123 => [1 => 1, 2 => 2, 3 => 3],  // User 123: A=1, B=2, C=3
+    456 => [2 => 1, 1 => 2, 3 => 3],  // User 456: B=1, A=2, C=3
+];
+
+$candidates = [1, 2, 3];  // Option IDs
+
+$results = $schulze->calculateWinner($votes, $candidates);
+
+// $results = [
+//     'winner_id' => 1,
+//     'ranking' => [1, 2, 3],
+//     'pairwise_matrix' => [...],
+//     'strongest_paths' => [...]
+// ]
+```
+
+#### BB Code расширение
+
+Создать свой BB Code renderer:
+
+```php
+class MyRenderer
+{
+    public static function render($children, $option, $tag, $options, $renderer)
+    {
+        // Custom rendering logic
+    }
+}
+```
+
+## Changelog
+
+### Version 1.0.0 (2025-01-17)
+
+- ✅ Фаза 1 (MVP): База функциональности
+  - Setup, Entity, Repository, Schulze
+  - Pub и Admin контроллеры
+  - Публичные и admin шаблоны
+
+- ✅ Фаза 2 (BB Code): Интеграция
+  - BB Code renderer с HMAC
+  - Embed template
+  - CSS стили
+  - Безопасность
+
+## Roadmap
+
+### Фаза 3: Permissions (планируется)
+- Детальная система прав
+- UI для настройки permissions
+- Интеграция с XenForo permissions
+
+### Фаза 4: UI/UX (планируется)
+- Drag-and-drop для ранжирования
+- AJAX голосование
+- Графики результатов
+- Countdown таймеры
+- Анимации
+
+### Фаза 5: Расширенные функции (планируется)
+- Экспорт результатов (CSV, PDF)
+- История изменений голосов
+- Уведомления
+- Статистика и аналитика
+- API для интеграций
+
+---
+
+**Статус**: Production Ready ✅
+
+**Дата релиза**: 17 января 2025
+
+**Версия**: 1.0.0

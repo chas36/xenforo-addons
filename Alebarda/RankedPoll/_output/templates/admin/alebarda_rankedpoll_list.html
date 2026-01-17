@@ -1,0 +1,44 @@
+<xf:title>{{ phrase('alebarda_rankedpoll_manage_polls') }}</xf:title>
+
+<div class="block">
+	<div class="block-container">
+		<div class="block-body">
+			<xf:if is="$polls is not empty">
+				<div class="structItemContainer">
+					<xf:foreach loop="$polls" value="$poll">
+						<div class="structItem structItem--middle">
+							<div class="structItem-cell structItem-cell--main">
+								<div class="structItem-title">
+									<strong>Poll #{$poll.poll_id}:</strong> {$poll.question}
+								</div>
+								<div class="structItem-minor">
+									Responses: {$poll.responses|count} | Votes: {$poll.voter_count}
+								</div>
+								<div class="structItem-minor">
+									<xf:if is="$poll.poll_type === 'ranked'">
+										<span class="label label--green">Ranked Poll</span>
+									<xf:else />
+										<span class="label label--default">Standard Poll</span>
+									</xf:if>
+								</div>
+							</div>
+							<div class="structItem-cell structItem-cell--meta">
+								<xf:if is="$poll.poll_type !== 'ranked'">
+									<a href="{{ link('ranked-polls/convert', $poll) }}"
+									   class="button button--small button--link"
+									   data-xf-click="overlay">
+										{{ phrase('alebarda_rankedpoll_convert_to_ranked') }}
+									</a>
+								<xf:else />
+									<span class="u-muted">Already ranked</span>
+								</xf:if>
+							</div>
+						</div>
+					</xf:foreach>
+				</div>
+			<xf:else />
+				<div class="blockMessage">{{ phrase('no_items_to_display') }}</div>
+			</xf:if>
+		</div>
+	</div>
+</div>

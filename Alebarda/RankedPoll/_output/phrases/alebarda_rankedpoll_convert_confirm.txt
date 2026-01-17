@@ -1,0 +1,1 @@
+Are you sure you want to convert poll #{poll_id} "{question}" to a ranked poll?

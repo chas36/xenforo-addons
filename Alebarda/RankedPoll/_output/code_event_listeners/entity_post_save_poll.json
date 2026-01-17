@@ -1,0 +1,9 @@
+{
+    "event_id": "entity_post_save",
+    "execute_order": 10,
+    "callback_class": "Alebarda\\RankedPoll\\Listener",
+    "callback_method": "pollEntityPostSave",
+    "active": true,
+    "hint": "XF:Poll",
+    "description": "Save ranked poll metadata after poll creation"
+}

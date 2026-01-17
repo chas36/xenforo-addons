@@ -1,138 +1,92 @@
-<xf:comment>
-	Ranked Poll Voting Interface
-	Supports both drag-and-drop (with JS) and dropdown fallback (no JS)
-</xf:comment>
+<xf:title>{{ $poll.question }}</xf:title>
 
 <div class="block">
 	<div class="block-container">
-		<h2 class="block-header">
-			<xf:if is="$poll.question">
-				{$poll.question}
-			<xf:else />
-				Poll
-			</xf:if>
-		</h2>
-
 		<div class="block-body">
+
 			<xf:if is="$poll.hasVoted()">
-				<div class="blockMessage blockMessage--important">
+				<div class="blockMessage blockMessage--important blockMessage--iconic">
 					<xf:if is="$poll.change_vote">
-						You have already voted. You can change your vote below.
+						Вы уже проголосовали. Вы можете изменить свой голос ниже.
 					<xf:else />
-						You have already voted and cannot change your vote.
+						Вы уже проголосовали и не можете изменить свой голос.
 					</xf:if>
 				</div>
 			</xf:if>
 
-			<form action="{xf:link 'polls/vote', $poll}" method="post" class="block" data-xf-init="ranked-poll-voter">
-				<div class="rankedPoll" data-poll-id="{$poll.poll_id}">
-
-					<xf:comment>Instructions</xf:comment>
-					<div class="rankedPoll-instructions blockMessage blockMessage--iconic blockMessage--info">
-						<strong>Instructions:</strong> Drag options from "Available Options" to "Your Ranking" to rank them.
-						Your first choice should be at the top of "Your Ranking". You don't need to rank all options.
-					</div>
-
-					<div class="rankedPoll-container">
-						<xf:comment>Drag-and-drop interface (requires JS)</xf:comment>
-						<div class="rankedPoll-dragInterface" data-has-js="true" style="display: none;">
-							<div class="rankedPoll-column">
-								<h3 class="rankedPoll-columnHeader">Available Options</h3>
-								<ul class="rankedPoll-list rankedPoll-unranked" id="unrankedOptions" data-zone="unranked">
-									<xf:foreach loop="$poll.Responses" value="$response">
-										<li class="rankedPoll-item" data-response-id="{$response.poll_response_id}">
-											<span class="rankedPoll-dragHandle"><i class="fa fa-grip-vertical"></i></span>
-											<span class="rankedPoll-text">{$response.response}</span>
-										</li>
-									</xf:foreach>
-								</ul>
-							</div>
-
-							<div class="rankedPoll-column">
-								<h3 class="rankedPoll-columnHeader">Your Ranking</h3>
-								<ol class="rankedPoll-list rankedPoll-ranked" id="rankedOptions" data-zone="ranked">
-									<xf:if is="$userRankedVotes">
-										<xf:foreach loop="$userRankedVotes" key="$responseId" value="$rank">
-											<xf:set var="$currentResponse" value="{$poll.Responses.{$responseId}}" />
-											<li class="rankedPoll-item" data-response-id="{$responseId}">
-												<span class="rankedPoll-dragHandle"><i class="fa fa-grip-vertical"></i></span>
-												<span class="rankedPoll-rank">{$rank}.</span>
-												<span class="rankedPoll-text">{$currentResponse.response}</span>
-											</li>
-										</xf:foreach>
-									</xf:if>
-								</ol>
-								<div class="rankedPoll-emptyState" style="display: none;">
-									Drag options here to rank them
-								</div>
-							</div>
-						</div>
-
-						<xf:comment>Fallback interface (no JS required)</xf:comment>
-						<div class="rankedPoll-fallbackInterface" data-has-js="false">
-							<p class="rankedPoll-fallbackInstructions">
-								Select a rank for each option you wish to vote for. Leave as "Not ranked" to skip an option.
-							</p>
-							<div class="formRow formRow--rankedPoll">
-								<xf:foreach loop="$poll.Responses" value="$response">
-									<dl class="formRow-item">
-										<dt>
-											<label for="rank_{$response.poll_response_id}">{$response.response}</label>
-										</dt>
-										<dd>
-											<xf:set var="$currentUserRank" value="{$userRankedVotes.{$response.poll_response_id}}" />
-											<select name="rankings[{$response.poll_response_id}]" id="rank_{$response.poll_response_id}" class="input">
-												<option value="">Not ranked</option>
-												<option value="1" {xf:if '$currentUserRank == 1', 'selected="selected"'}>1</option>
-												<option value="2" {xf:if '$currentUserRank == 2', 'selected="selected"'}>2</option>
-												<option value="3" {xf:if '$currentUserRank == 3', 'selected="selected"'}>3</option>
-												<option value="4" {xf:if '$currentUserRank == 4', 'selected="selected"'}>4</option>
-												<option value="5" {xf:if '$currentUserRank == 5', 'selected="selected"'}>5</option>
-												<option value="6" {xf:if '$currentUserRank == 6', 'selected="selected"'}>6</option>
-												<option value="7" {xf:if '$currentUserRank == 7', 'selected="selected"'}>7</option>
-												<option value="8" {xf:if '$currentUserRank == 8', 'selected="selected"'}>8</option>
-												<option value="9" {xf:if '$currentUserRank == 9', 'selected="selected"'}>9</option>
-												<option value="10" {xf:if '$currentUserRank == 10', 'selected="selected"'}>10</option>
-												<option value="11" {xf:if '$currentUserRank == 11', 'selected="selected"'}>11</option>
-												<option value="12" {xf:if '$currentUserRank == 12', 'selected="selected"'}>12</option>
-												<option value="13" {xf:if '$currentUserRank == 13', 'selected="selected"'}>13</option>
-												<option value="14" {xf:if '$currentUserRank == 14', 'selected="selected"'}>14</option>
-												<option value="15" {xf:if '$currentUserRank == 15', 'selected="selected"'}>15</option>
-												<option value="16" {xf:if '$currentUserRank == 16', 'selected="selected"'}>16</option>
-												<option value="17" {xf:if '$currentUserRank == 17', 'selected="selected"'}>17</option>
-												<option value="18" {xf:if '$currentUserRank == 18', 'selected="selected"'}>18</option>
-												<option value="19" {xf:if '$currentUserRank == 19', 'selected="selected"'}>19</option>
-												<option value="20" {xf:if '$currentUserRank == 20', 'selected="selected"'}>20</option>
-											</select>
-										</dd>
-									</dl>
-								</xf:foreach>
-							</div>
-						</div>
-					</div>
-
-					<xf:comment>Hidden input to store ranked order (populated by JS)</xf:comment>
-					<div id="rankedVotesData"></div>
-
-					<dl class="formRow formRow--submitRow">
-						<dt></dt>
-						<dd>
-							<xf:button type="submit" class="button--primary" icon="vote">
-								<xf:if is="$poll.hasVoted() AND $poll.change_vote">
-									Change vote
-								<xf:else />
-									Submit vote
-								</xf:if>
-							</xf:button>
-						</dd>
-					</dl>
+			<xf:if is="$poll.canVote()">
+				<div class="blockMessage blockMessage--info blockMessage--iconic">
+					<strong>Ranked-choice голосование (Метод Шульце)</strong><br />
+					Проранжируйте варианты от наиболее предпочитаемого к наименее предпочитаемому.
+					Вам не обязательно ранжировать все варианты.
 				</div>
 
-				<xf:hiddenval name="_xfToken" value="{$xf.visitor.csrf_token_page}" />
-			</form>
+				<form action="{{ link('ranked-polls/vote', $poll) }}" method="post" class="block">
+					<div class="block-body">
+						<xf:foreach loop="$poll.Responses" value="$response">
+							<xf:set var="$currentRank" value="{$userRankedVotes.{$response.poll_response_id}}" />
+
+							<dl class="inputPair">
+								<dt>
+									<div class="inputLabel">
+										{{ $response.response }}
+									</div>
+								</dt>
+								<dd>
+									<select name="rankings[{$response.poll_response_id}]" class="input">
+										<option value="">Не ранжировано</option>
+										<option value="1" {xf:if '$currentRank == 1', 'selected="selected"'}>1</option>
+										<option value="2" {xf:if '$currentRank == 2', 'selected="selected"'}>2</option>
+										<option value="3" {xf:if '$currentRank == 3', 'selected="selected"'}>3</option>
+										<option value="4" {xf:if '$currentRank == 4', 'selected="selected"'}>4</option>
+										<option value="5" {xf:if '$currentRank == 5', 'selected="selected"'}>5</option>
+										<option value="6" {xf:if '$currentRank == 6', 'selected="selected"'}>6</option>
+										<option value="7" {xf:if '$currentRank == 7', 'selected="selected"'}>7</option>
+										<option value="8" {xf:if '$currentRank == 8', 'selected="selected"'}>8</option>
+										<option value="9" {xf:if '$currentRank == 9', 'selected="selected"'}>9</option>
+										<option value="10" {xf:if '$currentRank == 10', 'selected="selected"'}>10</option>
+										<option value="11" {xf:if '$currentRank == 11', 'selected="selected"'}>11</option>
+										<option value="12" {xf:if '$currentRank == 12', 'selected="selected"'}>12</option>
+										<option value="13" {xf:if '$currentRank == 13', 'selected="selected"'}>13</option>
+										<option value="14" {xf:if '$currentRank == 14', 'selected="selected"'}>14</option>
+										<option value="15" {xf:if '$currentRank == 15', 'selected="selected"'}>15</option>
+									</select>
+								</dd>
+							</dl>
+						</xf:foreach>
+					</div>
+
+					<div class="block-footer">
+						<span class="block-footer-controls">
+							<xf:button type="submit" class="button--primary" icon="vote">
+								{{ phrase('cast_vote') }}
+							</xf:button>
+						</span>
+					</div>
+
+					<xf:hiddenval name="_xfToken" value="{{ csrf_token() }}" />
+				</form>
+
+			<xf:else />
+				<div class="blockMessage blockMessage--important">
+					{{ phrase('do_not_have_permission_to_vote') }}
+				</div>
+			</xf:if>
+
+			<!-- View Results Button -->
+			<xf:if is="$poll.canViewRankedResults()">
+				<div class="block-footer block-footer--split">
+					<span class="block-footer-controls">
+						<a href="{{ link('ranked-polls/results', $poll) }}" class="button button--link">
+							<span class="button-text">
+								<i class="fa fa-chart-bar" aria-hidden="true"></i>
+								{{ phrase('view_results') }}
+							</span>
+						</a>
+					</span>
+				</div>
+			</xf:if>
+
 		</div>
 	</div>
 </div>
-
-<xf:css src="alebarda/rankedpoll/ranked-poll.less" />
-<xf:js src="alebarda/rankedpoll/voting-interface.js" min="1" />

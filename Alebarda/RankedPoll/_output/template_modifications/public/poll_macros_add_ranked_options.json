@@ -1,9 +1,0 @@
-{
-    "template": "poll_macros",
-    "description": "Add ranked poll type selection to poll editor",
-    "execution_order": 10,
-    "enabled": true,
-    "action": "str_replace",
-    "find": "<xf:radiorow name=\"poll[max_votes_type]\"",
-    "replace": "<xf:radiorow name=\"poll[poll_type]\" value=\"{{ ($draft AND $draft.poll_type) ?: ($poll.poll_type ?: 'standard') }}\" label=\"Poll type\" explain=\"Choose how voters will select options\" rowtype=\"{$rowType}\">\n\t<xf:option value=\"standard\" selected=\"{{ ($draft AND $draft.poll_type == 'standard') OR (!$draft AND (!$poll OR $poll.poll_type != 'ranked')) }}\" label=\"Standard poll\" />\n\t<xf:option value=\"ranked\" selected=\"{{ ($draft AND $draft.poll_type == 'ranked') OR ($poll AND $poll.poll_type == 'ranked') }}\" label=\"Ranked-choice poll (Schulze method)\" />\n</xf:radiorow>\n\n<xf:if is=\"{{ ($draft AND $draft.poll_type == 'ranked') OR ($poll AND $poll.poll_type == 'ranked') }}\">\n\t<xf:radiorow name=\"poll[ranked_results_visibility]\" value=\"{{ ($draft AND $draft.ranked_results_visibility) ?: ($poll.ranked_results_visibility ?: 'after_close') }}\" label=\"Show results\" rowtype=\"{$rowType}\">\n\t\t<xf:option value=\"after_close\" selected=\"{{ ($draft AND $draft.ranked_results_visibility == 'after_close') OR (!$draft AND (!$poll OR $poll.ranked_results_visibility != 'realtime')) }}\" label=\"After poll closes\" />\n\t\t<xf:option value=\"realtime\" selected=\"{{ ($draft AND $draft.ranked_results_visibility == 'realtime') OR ($poll AND $poll.ranked_results_visibility == 'realtime') }}\" label=\"Real-time (as votes come in)\" />\n\t</xf:radiorow>\n</xf:if>\n\n<xf:radiorow name=\"poll[max_votes_type]\""
-}

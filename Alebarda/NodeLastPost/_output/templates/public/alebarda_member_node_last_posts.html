@@ -1,0 +1,79 @@
+<xf:title>Последние сообщения по узлам: {$user.username}</xf:title>
+<div class="block">
+	<div class="block-container">
+		<div class="block-header">Активность пользователя по узлам</div>
+		<div class="block-body">
+			<table class="dataList">
+				<thead>
+					<tr>
+						<th>Узел</th>
+						<th>Последнее сообщение</th>
+						<th>Когда</th>
+					</tr>
+				</thead>
+				<tbody>
+					<xf:foreach loop="$results" value="$row">
+						<tr>
+							<td>
+								<strong>{$row.label}</strong>
+								<xf:if is="$row.nodeTitle">
+									<div class="u-muted">{$row.nodeTitle}</div>
+								</xf:if>
+							</td>
+							<td>
+								<xf:if is="$row.notFound">
+									<span class="u-muted">Узел не найден</span>
+								<xf:elseif is="!$row.post" />
+									<span class="u-muted">Сообщений нет</span>
+								<xf:elseif is="$row.canViewPost" />
+									<a href="{{ link('posts', $row.post) }}">Посмотреть сообщение</a>
+								<xf:else />
+									<span class="u-muted">Есть сообщение (закрытый узел)</span>
+								</xf:if>
+							</td>
+							<td>
+								<xf:if is="$row.post">
+									{{ date_time($row.post.post_date) }}
+								<xf:else />
+									—
+								</xf:if>
+							</td>
+						</tr>
+					</xf:foreach>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+
+<div class="block">
+	<div class="block-container">
+		<div class="block-header">Проверка произвольного узла</div>
+		<div class="block-body">
+			<xf:form action="{{ link('members/node-last-posts', $user) }}" method="get" class="block">
+				<div class="block-row">
+					<xf:textbox name="custom_node_id" value="{$customNodeId}" type="number" min="1" />
+					<xf:button type="submit">Показать</xf:button>
+				</div>
+			</xf:form>
+			<xf:if is="$customNodeId">
+				<xf:if is="$customResult">
+					<div class="block-row">
+						<strong>Результат для узла {$customResult.nodeId}</strong>
+						<xf:if is="$customResult.notFound">
+							<div class="u-muted">Узел не найден</div>
+						<xf:elseif is="!$customResult.post" />
+							<div class="u-muted">Сообщений нет</div>
+						<xf:elseif is="$customResult.canViewPost" />
+							<div><a href="{{ link('posts', $customResult.post) }}">Посмотреть сообщение</a></div>
+							<div class="u-muted">{{ date_time($customResult.post.post_date) }}</div>
+						<xf:else />
+							<div class="u-muted">Есть сообщение (закрытый узел)</div>
+							<div class="u-muted">{{ date_time($customResult.post.post_date) }}</div>
+						</xf:if>
+					</div>
+				</xf:if>
+			</xf:if>
+		</div>
+	</div>
+</div>

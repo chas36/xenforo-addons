@@ -1,0 +1,208 @@
+<xf:title>
+	<xf:if is="$poll.exists()">
+		{{ phrase('edit_ranked_poll') }}: {$poll.title}
+	<xf:else />
+		{{ phrase('add_ranked_poll') }}
+	</xf:if>
+</xf:title>
+
+<xf:form action="{{ link('ranked-polls/save', $poll) }}" class="block" ajax="true">
+	<div class="block-container">
+		<xf:csrf />
+		<h2 class="block-header">
+			<xf:if is="$poll.exists()">
+				{{ phrase('edit_ranked_poll') }}
+			<xf:else />
+				{{ phrase('add_ranked_poll') }}
+			</xf:if>
+		</h2>
+
+		<div class="block-body">
+			<!-- Основная информация -->
+			<xf:textboxrow name="title" value="{$poll.title}" label="{{ phrase('title') }}:" required="required" />
+
+			<xf:textarearow name="description" value="{$poll.description}" label="{{ phrase('description') }}:"
+				hint="{{ phrase('optional') }}" rows="3" />
+
+			<!-- Опции -->
+			<hr class="formRowSep" />
+
+			<xf:formrow label="{{ phrase('poll_options') }}:" explain="{{ phrase('alebarda_rankedpoll_options_explain') }}">
+				<div id="pollOptions">
+					<xf:if is="count($poll.Options)">
+						<xf:foreach loop="$poll.Options" value="$option" key="$i">
+							<div class="inputGroup" data-option-index="{$i}">
+								<input type="text" name="options[{$i}][text]" value="{$option.option_text}"
+									class="input" placeholder="{{ phrase('option_text') }}" required />
+								<span class="inputGroup-splitter"></span>
+								<button type="button" class="button button--link" onclick="removeOption(this)">
+									<i class="fa fa-times"></i>
+								</button>
+							</div>
+						</xf:foreach>
+					<xf:else />
+						<div class="inputGroup" data-option-index="0">
+							<input type="text" name="options[0][text]" class="input"
+								placeholder="{{ phrase('option_text') }}" required />
+							<span class="inputGroup-splitter"></span>
+							<button type="button" class="button button--link" onclick="removeOption(this)">
+								<i class="fa fa-times"></i>
+							</button>
+						</div>
+						<div class="inputGroup" data-option-index="1">
+							<input type="text" name="options[1][text]" class="input"
+								placeholder="{{ phrase('option_text') }}" required />
+							<span class="inputGroup-splitter"></span>
+							<button type="button" class="button button--link" onclick="removeOption(this)">
+								<i class="fa fa-times"></i>
+							</button>
+						</div>
+					</xf:if>
+				</div>
+
+				<button type="button" class="button button--link" onclick="addOption()">
+					<i class="fa fa-plus"></i>
+					{{ phrase('add_option') }}
+				</button>
+			</xf:formrow>
+
+			<!-- Статус -->
+			<hr class="formRowSep" />
+
+			<xf:radiorow name="poll_status" value="{$poll.poll_status}" label="{{ phrase('status') }}:">
+				<xf:option value="draft" label="{{ phrase('draft') }}" />
+				<xf:option value="open" label="{{ phrase('open') }}" />
+				<xf:option value="closed" label="{{ phrase('closed') }}" />
+			</xf:radiorow>
+
+			<!-- Временные рамки -->
+			<hr class="formRowSep" />
+
+			<xf:dateinputrow name="open_date"
+				value="{$poll.open_date}"
+				label="{{ phrase('open_date') }}:"
+				hint="{{ phrase('alebarda_rankedpoll_open_date_hint') }}" />
+
+			<xf:dateinputrow name="close_date"
+				value="{$poll.close_date}"
+				label="{{ phrase('close_date') }}:"
+				hint="{{ phrase('alebarda_rankedpoll_close_date_hint') }}" />
+
+			<!-- Видимость результатов -->
+			<hr class="formRowSep" />
+
+			<xf:radiorow name="results_visibility" value="{$poll.results_visibility}"
+				label="{{ phrase('results_visibility') }}:">
+				<xf:option value="realtime" label="{{ phrase('alebarda_rankedpoll_visibility_realtime') }}"
+					hint="{{ phrase('alebarda_rankedpoll_visibility_realtime_hint') }}" />
+				<xf:option value="after_vote" label="{{ phrase('alebarda_rankedpoll_visibility_after_vote') }}"
+					hint="{{ phrase('alebarda_rankedpoll_visibility_after_vote_hint') }}" />
+				<xf:option value="after_close" label="{{ phrase('alebarda_rankedpoll_visibility_after_close') }}"
+					hint="{{ phrase('alebarda_rankedpoll_visibility_after_close_hint') }}" />
+				<xf:option value="never" label="{{ phrase('alebarda_rankedpoll_visibility_never') }}"
+					hint="{{ phrase('alebarda_rankedpoll_visibility_never_hint') }}" />
+			</xf:radiorow>
+
+			<!-- Контроль доступа -->
+			<hr class="formRowSep" />
+
+			<xf:checkboxrow label="{{ phrase('allowed_user_groups') }}:"
+				explain="{{ phrase('alebarda_rankedpoll_allowed_groups_explain') }}">
+				<xf:foreach loop="$userGroups" key="$groupId" value="$groupTitle">
+					<xf:option name="allowed_user_groups[]" value="{$groupId}"
+						label="{$groupTitle}"
+						selected="{{ in_array($groupId, $allowedGroups) }}" />
+				</xf:foreach>
+			</xf:checkboxrow>
+
+			<!-- Дополнительные настройки -->
+			<hr class="formRowSep" />
+
+			<xf:checkboxrow label="{{ phrase('options') }}:">
+				<xf:option name="show_voter_list" value="1"
+					label="{{ phrase('alebarda_rankedpoll_show_voter_list') }}"
+					hint="{{ phrase('alebarda_rankedpoll_show_voter_list_hint') }}"
+					selected="{$poll.show_voter_list}" />
+
+				<xf:option name="allow_vote_change" value="1"
+					label="{{ phrase('alebarda_rankedpoll_allow_vote_change') }}"
+					hint="{{ phrase('alebarda_rankedpoll_allow_vote_change_hint') }}"
+					selected="{$poll.allow_vote_change}" />
+
+				<xf:option name="require_all_ranked" value="1"
+					label="{{ phrase('alebarda_rankedpoll_require_all_ranked') }}"
+					hint="{{ phrase('alebarda_rankedpoll_require_all_ranked_hint') }}"
+					selected="{$poll.require_all_ranked}" />
+			</xf:checkboxrow>
+
+			<!-- Информация об опросе -->
+			<xf:if is="$poll.exists()">
+				<hr class="formRowSep" />
+
+				<xf:formrow label="{{ phrase('poll_stats') }}:">
+					<dl class="pairs pairs--columns pairs--fixedSmall">
+						<dt>{{ phrase('total_votes') }}:</dt>
+						<dd>{$poll.voter_count}</dd>
+
+						<dt>{{ phrase('views') }}:</dt>
+						<dd>{$poll.view_count}</dd>
+
+						<dt>{{ phrase('created') }}:</dt>
+						<dd><xf:date time="{$poll.created_date}" /></dd>
+					</dl>
+				</xf:formrow>
+			</xf:if>
+		</div>
+
+		<xf:submitrow sticky="true" icon="save" submit="{{ phrase('save') }}" />
+
+		<xf:formrow>
+			<div class="buttonGroup">
+				<xf:button href="{{ link('ranked-polls') }}">
+					{{ phrase('cancel') }}
+				</xf:button>
+
+				<xf:if is="$poll.exists()">
+					<xf:button href="{{ link('ranked-polls/view', $poll) }}" class="button--link">
+						<i class="fa fa-external-link-alt"></i>
+						{{ phrase('view') }}
+					</xf:button>
+				</xf:if>
+			</div>
+		</xf:formrow>
+	</div>
+</xf:form>
+
+<script>
+let optionIndex = {{ count($poll.Options) ? count($poll.Options) : 2 }};
+
+function addOption() {
+	const container = document.getElementById('pollOptions');
+	const newOption = document.createElement('div');
+	newOption.className = 'inputGroup';
+	newOption.setAttribute('data-option-index', optionIndex);
+	newOption.innerHTML = `
+		<input type="text" name="options[${optionIndex}][text]" class="input"
+			placeholder="{{ phrase('option_text') }}" required />
+		<span class="inputGroup-splitter"></span>
+		<button type="button" class="button button--link" onclick="removeOption(this)">
+			<i class="fa fa-times"></i>
+		</button>
+	`;
+	container.appendChild(newOption);
+	optionIndex++;
+}
+
+function removeOption(button) {
+	const container = document.getElementById('pollOptions');
+	const optionGroups = container.querySelectorAll('.inputGroup');
+
+	// Минимум 2 опции
+	if (optionGroups.length <= 2) {
+		alert('{{ phrase('alebarda_rankedpoll_min_two_options') }}');
+		return;
+	}
+
+	button.closest('.inputGroup').remove();
+}
+</script>

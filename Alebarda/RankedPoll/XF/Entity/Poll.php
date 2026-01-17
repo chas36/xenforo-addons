@@ -8,7 +8,6 @@ use XF\Mvc\Entity\Structure;
  * Extends \XF\Entity\Poll
  *
  * COLUMNS
- * -----------
  * @property string poll_type
  * @property string ranked_results_visibility
  * @property string|null schulze_winner_cache
@@ -23,15 +22,11 @@ class Poll extends XFCP_Poll
 	 */
 	public function isRankedPoll()
 	{
-		return $this->poll_type === 'ranked';
+		return isset($this->poll_type) && $this->poll_type === 'ranked';
 	}
 
 	/**
 	 * Check if user can view ranked poll results
-	 *
-	 * Takes into account the ranked_results_visibility setting:
-	 * - 'realtime': always visible (if user can view results in general)
-	 * - 'after_close': only after poll closes or if user has voted
 	 *
 	 * @param string|null $error
 	 * @return bool
@@ -60,49 +55,9 @@ class Poll extends XFCP_Poll
 	}
 
 	/**
-	 * Get cached Schulze results or recalculate if needed
-	 *
-	 * @return array|null ['winner' => int|null, 'strongestPaths' => array, 'preferences' => array, 'ranking' => array]
-	 */
-	public function getSchulzeResults()
-	{
-		if (!$this->isRankedPoll())
-		{
-			return null;
-		}
-
-		// Try to use cache
-		if ($this->schulze_winner_cache !== null && $this->schulze_matrix_cache !== null)
-		{
-			try
-			{
-				$winner = json_decode($this->schulze_winner_cache, true);
-				$matrix = json_decode($this->schulze_matrix_cache, true);
-
-				if ($matrix !== null)
-				{
-					return [
-						'winner' => $winner,
-						'strongestPaths' => $matrix,
-						'preferences' => [], // Not cached, would need recalculation
-						'ranking' => [] // Not cached, would need recalculation
-					];
-				}
-			}
-			catch (\Exception $e)
-			{
-				// Cache corrupted, fall through to recalculation
-			}
-		}
-
-		// Cache miss or invalid - need to recalculate
-		return $this->getRankedPollRepo()->calculateAndCacheSchulzeResults($this);
-	}
-
-	/**
 	 * Get user's ranked votes for this poll
 	 *
-	 * @param int|null $userId Defaults to current visitor
+	 * @param int|null $userId
 	 * @return array [response_id => rank_position]
 	 */
 	public function getUserRankedVotes($userId = null)
@@ -129,13 +84,62 @@ class Poll extends XFCP_Poll
 	}
 
 	/**
-	 * Get ranked poll repository
+	 * Get ranked poll metadata
 	 *
-	 * @return \Alebarda\RankedPoll\XF\Repository\PollRepository
+	 * @return array|null
 	 */
-	protected function getRankedPollRepo()
+	public function getRankedMetadata()
 	{
-		return $this->repository('XF:Poll');
+		if (!$this->isRankedPoll())
+		{
+			return null;
+		}
+
+		// Cache metadata to avoid repeated queries
+		if (!isset($this->_rankedMetadata))
+		{
+			$this->_rankedMetadata = $this->db()->fetchRow("
+				SELECT *
+				FROM xf_alebarda_ranked_poll_metadata
+				WHERE poll_id = ?
+			", $this->poll_id);
+		}
+
+		return $this->_rankedMetadata ?: null;
+	}
+
+	/**
+	 * Lifecycle hook: After saving poll
+	 * Invalidate cached results when poll closes
+	 */
+	protected function _postSave()
+	{
+		parent::_postSave();
+
+		// If ranked poll and close_date changed, invalidate cache
+		if ($this->isRankedPoll() && $this->isChanged('close_date'))
+		{
+			$this->schulze_winner_cache = null;
+			$this->schulze_matrix_cache = null;
+		}
+	}
+
+	/**
+	 * Lifecycle hook: After deleting poll
+	 * Clean up ranked voting data
+	 */
+	protected function _postDelete()
+	{
+		parent::_postDelete();
+
+		if ($this->isRankedPoll())
+		{
+			// Delete ranked votes
+			$this->db()->delete('xf_poll_ranked_vote', 'poll_id = ?', $this->poll_id);
+
+			// Delete metadata
+			$this->db()->delete('xf_alebarda_ranked_poll_metadata', 'poll_id = ?', $this->poll_id);
+		}
 	}
 
 	/**

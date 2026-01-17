@@ -2,92 +2,185 @@
 
 namespace Alebarda\RankedPoll;
 
-use XF\Mvc\Entity\Entity;
+use XF\Template\Templater;
 
+/**
+ * Code Event Listeners for Ranked Poll
+ */
 class Listener
 {
 	/**
-	 * Listen to entity_pre_save to capture poll_type and ranked_results_visibility from input
+	 * Listen to template pre-render to switch poll_block to ranked version
 	 *
-	 * @param Entity $entity
+	 * Event: templater_template_pre_render
+	 * Hint: public:poll_block
+	 *
+	 * @param Templater $templater
+	 * @param string $type Template type (e.g., 'public')
+	 * @param string $template Template name (e.g., 'poll_block')
+	 * @param array $params Template parameters
 	 */
-	public static function pollEntityPreSave(Entity $entity)
+	public static function templaterTemplatePreRender(
+		Templater $templater,
+		&$type,
+		&$template,
+		array &$params
+	)
 	{
-		// Debug: Log to file instead of XF error log
-		$logFile = '/var/www/u0513784/data/www/beta.politsim.ru/internal_data/rankedpoll_debug.log';
-		$timestamp = date('Y-m-d H:i:s');
+		// Only process poll_block template
+		if ($template !== 'poll_block')
+		{
+			return;
+		}
 
-		file_put_contents($logFile, "[{$timestamp}] Listener called for: " . get_class($entity) . "\n", FILE_APPEND);
+		// Check if we have a poll in params
+		if (empty($params['poll']))
+		{
+			return;
+		}
 
+		$poll = $params['poll'];
+
+		// Check if poll type is ranked
+		// Use direct property access to avoid calling methods
+		if (isset($poll->poll_type) && $poll->poll_type === 'ranked')
+		{
+			// Switch to ranked poll template
+			$template = 'poll_block_ranked';
+
+			// Add user's ranked votes to params if user is logged in
+			$visitor = \XF::visitor();
+			if ($visitor->user_id && method_exists($poll, 'getUserRankedVotes'))
+			{
+				$params['userRankedVotes'] = $poll->getUserRankedVotes($visitor->user_id);
+			}
+			else
+			{
+				$params['userRankedVotes'] = [];
+			}
+		}
+	}
+
+	/**
+	 * Listen to macro pre-render to add ranked checkbox to poll form
+	 *
+	 * Event: templater_macro_pre_render
+	 * Hint: public:poll_macros:add_edit_inputs
+	 *
+	 * @param Templater $templater
+	 * @param string $type
+	 * @param string $template
+	 * @param string $name Macro name
+	 * @param array $arguments
+	 * @param array $globalVars
+	 */
+	public static function templaterMacroPreRender(
+		Templater $templater,
+		&$type,
+		&$template,
+		&$name,
+		array &$arguments,
+		array &$globalVars
+	)
+	{
+		// Only process poll_macros:add_edit_inputs
+		if ($template !== 'poll_macros' || $name !== 'add_edit_inputs')
+		{
+			return;
+		}
+
+		// Add flag to indicate we should show ranked option
+		// This will be used in template modification (if we add one later)
+		$arguments['showRankedOption'] = true;
+	}
+
+	/**
+	 * Listen to entity_pre_save event for Poll
+	 * Intercept poll creation to set ranked voting options
+	 *
+	 * Event: entity_pre_save
+	 * Hint: XF:Poll
+	 *
+	 * @param \XF\Mvc\Entity\Entity $entity
+	 */
+	public static function pollEntityPreSave(\XF\Mvc\Entity\Entity $entity)
+	{
+		// Only handle Poll entities
 		if (!($entity instanceof \XF\Entity\Poll))
 		{
 			return;
 		}
 
-		file_put_contents($logFile, "[{$timestamp}] Entity is Poll! Proceeding...\n", FILE_APPEND);
-
 		/** @var \XF\Entity\Poll $poll */
 		$poll = $entity;
 
-		$pollType = null;
-		$rankedVisibility = null;
-
-		// Method 1: Try session (set by Forum controller)
-		$session = \XF::session();
-		if ($session)
+		// Check if this is a new poll being created
+		if (!$poll->exists())
 		{
-			$pollType = $session->get('_pollTypeForSave');
-			$rankedVisibility = $session->get('_pollRankedVisibilityForSave');
+			// Get request data
+			$request = \XF::app()->request();
+			$pollData = $request->filter('poll', 'array');
 
-			// Clear from session after reading
-			if ($pollType)
+			// Check if ranked voting is enabled
+			if (!empty($pollData['enable_ranked_voting']))
 			{
-				$session->remove('_pollTypeForSave');
-				$session->remove('_pollRankedVisibilityForSave');
+				// Set poll type to ranked
+				$poll->poll_type = 'ranked';
 			}
 		}
+	}
 
-		// Method 2: Try Request
-		if (!$pollType)
+	/**
+	 * Listen to entity_post_save event for Poll
+	 * Save ranked poll metadata after poll is created
+	 *
+	 * Event: entity_post_save
+	 * Hint: XF:Poll
+	 *
+	 * @param \XF\Mvc\Entity\Entity $entity
+	 */
+	public static function pollEntityPostSave(\XF\Mvc\Entity\Entity $entity)
+	{
+		// Only handle Poll entities
+		if (!($entity instanceof \XF\Entity\Poll))
 		{
-			try
+			return;
+		}
+
+		/** @var \Alebarda\RankedPoll\XF\Entity\Poll $poll */
+		$poll = $entity;
+
+		// Check if this is a ranked poll and it's being inserted (not updated)
+		if ($poll->poll_type === 'ranked' && $poll->isInsert())
+		{
+			// Get request data for additional settings
+			$request = \XF::app()->request();
+			$pollData = $request->filter('poll', 'array');
+
+			// Get visibility setting
+			$visibility = $pollData['ranked_results_visibility'] ?? 'after_close';
+			if (!in_array($visibility, ['realtime', 'after_close']))
 			{
-				$request = \XF::app()->request();
-				if ($request && $request->exists('poll'))
-				{
-					$pollInput = $request->filter('poll', 'array');
-					$pollType = $pollInput['poll_type'] ?? null;
-					$rankedVisibility = $pollInput['ranked_results_visibility'] ?? null;
-				}
+				$visibility = 'after_close';
 			}
-			catch (\Exception $e)
-			{
-				// Request not available
-			}
-		}
 
-		// Method 3: Fallback to $_POST
-		if (!$pollType && !empty($_POST['poll']))
-		{
-			$pollType = $_POST['poll']['poll_type'] ?? null;
-			$rankedVisibility = $_POST['poll']['ranked_results_visibility'] ?? null;
-		}
+			// Get allowed user groups (default: all registered users)
+			$allowedGroups = $pollData['allowed_user_groups'] ?? [2]; // 2 = Registered
 
-		// Log what we found
-		file_put_contents($logFile, "[{$timestamp}] Found poll_type: " . ($pollType ?: 'null') . "\n", FILE_APPEND);
-		file_put_contents($logFile, "[{$timestamp}] Found ranked_visibility: " . ($rankedVisibility ?: 'null') . "\n", FILE_APPEND);
+			// Get voter list visibility
+			$showVoterList = !empty($pollData['show_voter_list']) ? 1 : 0;
 
-		// Apply values if found
-		if ($pollType)
-		{
-			$poll->poll_type = $pollType;
-			file_put_contents($logFile, "[{$timestamp}] Set poll_type to {$pollType} for poll_id " . ($poll->poll_id ?? 'new') . "\n", FILE_APPEND);
-		}
-
-		if ($rankedVisibility)
-		{
-			$poll->ranked_results_visibility = $rankedVisibility;
-			file_put_contents($logFile, "[{$timestamp}] Set ranked_results_visibility to {$rankedVisibility}\n", FILE_APPEND);
+			// Insert metadata
+			$db = \XF::db();
+			$db->insert('xf_alebarda_ranked_poll_metadata', [
+				'poll_id' => $poll->poll_id,
+				'is_ranked' => 1,
+				'results_visibility' => $visibility,
+				'allowed_user_groups' => json_encode($allowedGroups),
+				'open_date' => null,
+				'close_date' => $poll->close_date,
+				'show_voter_list' => $showVoterList
+			], false, 'poll_id = VALUES(poll_id)');
 		}
 	}
 }

@@ -1,0 +1,64 @@
+<xf:title>
+	<xf:if is="$user">
+		Last post by {$user.username} in node: {$node.title}
+	<xf:else />
+		Last post in node: {$node.title}
+	</xf:if>
+</xf:title>
+
+<div class="block">
+	<div class="block-container">
+		<xf:if is="$post">
+			<xf:if is="$canViewPost">
+				<div class="block-header">Latest post details</div>
+				<div class="block-body">
+					<dl class="pairs pairs--justified">
+						<dt>Thread</dt>
+						<dd><a href="{{ link('threads', $post.Thread) }}">{$post.Thread.title}</a></dd>
+					</dl>
+					<xf:if is="$post.Thread.Forum">
+						<dl class="pairs pairs--justified">
+							<dt>Forum</dt>
+							<dd>{$post.Thread.Forum.title}</dd>
+						</dl>
+					</xf:if>
+					<xf:if is="$user">
+						<dl class="pairs pairs--justified">
+							<dt>User</dt>
+							<dd>{$user.username}</dd>
+						</dl>
+					<xf:else />
+						<dl class="pairs pairs--justified">
+							<dt>Author</dt>
+							<dd><xf:if is="$post.User">{$post.User.username}<xf:else />Unknown</xf:if></dd>
+						</dl>
+					</xf:if>
+					<dl class="pairs pairs--justified">
+						<dt>Posted</dt>
+						<dd>{{ date_time($post.post_date) }}</dd>
+					</dl>
+					<dl class="pairs pairs--justified">
+						<dt>Post</dt>
+						<dd><a href="{{ link('posts', $post) }}">View post</a></dd>
+					</dl>
+					<div class="block-row">
+						<strong>Snippet</strong>
+						<div>{{ snippet($post.message, 200) }}</div>
+					</div>
+				</div>
+			<xf:else />
+				<div class="block-body">
+					<div class="blockMessage blockMessage--important">
+						Latest post is in a restricted forum.
+					</div>
+				</div>
+			</xf:if>
+		<xf:else />
+			<div class="block-body">
+				<div class="blockMessage blockMessage--none">
+					No visible posts found in this node or its descendants.
+				</div>
+			</div>
+		</xf:if>
+	</div>
+</div>

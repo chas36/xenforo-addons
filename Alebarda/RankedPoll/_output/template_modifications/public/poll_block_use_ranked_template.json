@@ -1,9 +1,0 @@
-{
-    "template": "poll_block",
-    "description": "Use poll_block_ranked template for ranked polls",
-    "execution_order": 10,
-    "enabled": true,
-    "action": "str_replace",
-    "find": "<xf:macro id=\"poll_macros::poll_block\" arg-poll=\"{$poll}\" arg-simpleDisplay=\"{$simpleDisplay}\" />",
-    "replace": "<xf:if is=\"$poll.poll_type == 'ranked'\">\n\t<xf:include template=\"poll_block_ranked\" />\n<xf:else />\n\t<xf:macro id=\"poll_macros::poll_block\" arg-poll=\"{$poll}\" arg-simpleDisplay=\"{$simpleDisplay}\" />\n</xf:if>"
-}

@@ -1,0 +1,1 @@
+Users will rank options by preference instead of selecting choices. Winner determined by Schulze method.

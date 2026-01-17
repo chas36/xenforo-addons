@@ -1,0 +1,11 @@
+{
+    "route_type": "public",
+    "route_prefix": "members",
+    "sub_name": "node-last-posts",
+    "format": ":int<user_id>/node-last-posts",
+    "build_class": "",
+    "build_method": "",
+    "controller": "Alebarda\\NodeLastPost:Member",
+    "context": "",
+    "action_prefix": "NodeLastPosts"
+}

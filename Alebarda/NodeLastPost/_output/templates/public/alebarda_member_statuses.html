@@ -1,0 +1,190 @@
+<div class="block">
+	<div class="block-container">
+		<div class="block-header">{{ phrase('alebarda_node_last_post_statuses_block_title') }}</div>
+		<div class="block-body">
+			<div class="block-row" id="alebarda-user-statuses"
+				data-user-id="{$user.user_id}"
+				data-user-name="{$user.username|for_attr}"
+				data-user-link="{{ link('members', $user) }}"
+				data-label-heading="{{ phrase('alebarda_node_last_post_statuses_user_heading')|for_attr }}"
+				data-label-status="{{ phrase('alebarda_node_last_post_statuses_table_status')|for_attr }}"
+				data-label-empty="{{ phrase('alebarda_node_last_post_statuses_empty')|for_attr }}"
+				data-label-no-data="{{ phrase('alebarda_node_last_post_statuses_no_data')|for_attr }}">
+				<div class="u-muted">{{ phrase('alebarda_node_last_post_statuses_loading') }}</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+(function()
+{
+	var container = document.getElementById('alebarda-user-statuses');
+	if (!container)
+	{
+		return;
+	}
+
+	var userId = container.dataset.userId;
+	var userName = container.dataset.userName || '';
+	var userLink = container.dataset.userLink || '';
+	var labelHeading = container.dataset.labelHeading || '';
+	var labelStatus = container.dataset.labelStatus || '';
+	var labelEmpty = container.dataset.labelEmpty || '';
+	var labelNoData = container.dataset.labelNoData || '';
+
+	function getJson(url, params, callback)
+	{
+		var query = new URLSearchParams(params || {}).toString();
+		var fetchUrl = query ? (url + '?' + query) : url;
+
+		fetch(fetchUrl, { credentials: 'same-origin' })
+			.then(function(response)
+			{
+				return response.json();
+			})
+			.then(function(data)
+			{
+				callback(data);
+			})
+			.catch(function()
+			{
+				container.innerHTML = '<div class="u-muted">' + labelNoData + '</div>';
+			});
+	}
+
+	function extractGroupData(groupList, groupDataArray, userDataArray, callback)
+	{
+		if (groupList.length > 0)
+		{
+			var groupId = groupList.pop();
+			getJson('/semenar_getusergroupdata.php', {"user_group_id": groupId}, function(data)
+			{
+				groupDataArray.push(data);
+				extractGroupData(groupList, groupDataArray, userDataArray, callback);
+			});
+		}
+		else
+		{
+			var tempArray = [];
+			for (var i = 0; i < groupDataArray.length; i++)
+			{
+				tempArray.push(groupDataArray[i]);
+			}
+
+			tempArray.sort(function(a, b)
+			{
+				if (Number(a.display_style_priority) !== Number(b.display_style_priority))
+				{
+					return Number(b.display_style_priority) - Number(a.display_style_priority);
+				}
+				return Number(b.user_group_id) - Number(a.user_group_id);
+			});
+
+			for (var ind = 0; ind < tempArray.length; ind++)
+			{
+				groupDataArray[ind] = tempArray[ind];
+			}
+
+			if (callback)
+			{
+				callback(groupDataArray, userDataArray);
+			}
+		}
+	}
+
+	function getUserGroups(targetUserId, groupDataArray, userDataArray, callback)
+	{
+		getJson('/semenar_getuserdata.php', {"user_id": targetUserId}, function(data)
+		{
+			if (data !== null)
+			{
+				data.user_id = targetUserId;
+				userDataArray.push(data);
+
+				var userGroups = [];
+				if (data.user_group_id !== null)
+				{
+					userGroups.push(data.user_group_id);
+				}
+				if (data.secondary_group_ids !== null && data.secondary_group_ids !== '')
+				{
+					var secondary = data.secondary_group_ids.split(',');
+					for (var j = 0; j < secondary.length; j++)
+					{
+						userGroups.push(secondary[j]);
+					}
+				}
+
+				extractGroupData(userGroups, groupDataArray, userDataArray, callback);
+			}
+			else
+			{
+				container.innerHTML = '<div class="u-muted">' + labelNoData + '</div>';
+			}
+		});
+	}
+
+	function displayUserGroupsCallback(groupData, userData)
+	{
+		container.innerHTML = '';
+
+		var userTitle = document.createElement('h3');
+		userTitle.innerHTML = labelHeading + ' <b><a href="' + userLink + '">' + userName + '</a></b>';
+		container.appendChild(userTitle);
+
+		var table = document.createElement('table');
+		table.className = 'dataList dataList--noHover';
+		var thead = document.createElement('thead');
+		var headRow = document.createElement('tr');
+		var headCell = document.createElement('th');
+		headCell.textContent = labelStatus;
+		headRow.appendChild(headCell);
+		thead.appendChild(headRow);
+		table.appendChild(thead);
+		var tbody = document.createElement('tbody');
+		table.appendChild(tbody);
+		container.appendChild(table);
+
+		var added = 0;
+		for (var i = 0; i < groupData.length; i++)
+		{
+			var group = groupData[i];
+			if (group.banner_text)
+			{
+				var row = document.createElement('tr');
+				var cell = document.createElement('td');
+				var label = document.createElement('div');
+				label.className = 'username--style' + group.user_group_id;
+				label.textContent = group.banner_text;
+				cell.appendChild(label);
+				row.appendChild(cell);
+				tbody.appendChild(row);
+				added++;
+			}
+		}
+
+		if (!added)
+		{
+			var emptyText = labelEmpty;
+			var rowEmpty = document.createElement('tr');
+			var cellEmpty = document.createElement('td');
+			var spanEmpty = document.createElement('span');
+			spanEmpty.className = 'u-muted';
+			spanEmpty.textContent = emptyText;
+			cellEmpty.appendChild(spanEmpty);
+			rowEmpty.appendChild(cellEmpty);
+			tbody.appendChild(rowEmpty);
+		}
+	}
+
+	function displayUserGroups(targetUserId)
+	{
+		var groupData = [];
+		var userData = [];
+		getUserGroups(targetUserId, groupData, userData, displayUserGroupsCallback);
+	}
+
+	displayUserGroups(userId);
+})();
+</script>

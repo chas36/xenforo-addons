@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language title="Russian (RU)" language_code="ru-RU" text_direction="LTR" user_selectable="1" addon_id="Alebarda/NodeLastPost" base_version_id="1000010" export_version="2">
+  <phrase title="alebarda_node_last_post_statuses_tab" addon_id="Alebarda/NodeLastPost" version_id="1000010" version_string="1.0.0"><![CDATA[Статусы пользователя]]></phrase>
+  <phrase title="alebarda_node_last_post_statuses_block_title" addon_id="Alebarda/NodeLastPost" version_id="1000010" version_string="1.0.0"><![CDATA[Статусы пользователя]]></phrase>
+  <phrase title="alebarda_node_last_post_statuses_loading" addon_id="Alebarda/NodeLastPost" version_id="1000010" version_string="1.0.0"><![CDATA[Загрузка...]]></phrase>
+  <phrase title="alebarda_node_last_post_statuses_no_data" addon_id="Alebarda/NodeLastPost" version_id="1000010" version_string="1.0.0"><![CDATA[Нет данных по пользователю]]></phrase>
+  <phrase title="alebarda_node_last_post_statuses_user_heading" addon_id="Alebarda/NodeLastPost" version_id="1000010" version_string="1.0.0"><![CDATA[Статусы пользователя]]></phrase>
+  <phrase title="alebarda_node_last_post_statuses_table_status" addon_id="Alebarda/NodeLastPost" version_id="1000010" version_string="1.0.0"><![CDATA[Статус]]></phrase>
+  <phrase title="alebarda_node_last_post_statuses_empty" addon_id="Alebarda/NodeLastPost" version_id="1000010" version_string="1.0.0"><![CDATA[Статусы не найдены]]></phrase>
+</language>

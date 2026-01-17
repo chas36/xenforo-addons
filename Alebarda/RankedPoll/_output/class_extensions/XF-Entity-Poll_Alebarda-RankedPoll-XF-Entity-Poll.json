@@ -1,6 +1,6 @@
 {
     "from_class": "XF\\Entity\\Poll",
     "to_class": "Alebarda\\RankedPoll\\XF\\Entity\\Poll",
-    "execute_order": 5,
+    "execute_order": 20,
     "active": true
 }

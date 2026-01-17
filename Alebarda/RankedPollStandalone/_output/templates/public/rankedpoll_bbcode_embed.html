@@ -1,0 +1,191 @@
+<div class="bbCodeBlock bbCodeBlock--rankedPoll"
+     data-poll-id="{$poll.poll_id}"
+     data-signature="{$signature}">
+
+	<div class="bbCodeBlock-title">
+		<span class="bbCodeBlock-title-icon">
+			<i class="fa fa-poll"></i>
+		</span>
+		{{ phrase('ranked_poll') }}
+	</div>
+
+	<div class="bbCodeBlock-content">
+		<div class="rankedPoll-embed">
+			<!-- Заголовок опроса -->
+			<div class="rankedPoll-header">
+				<h4 class="rankedPoll-title">
+					<a href="{{ link('ranked-polls', $poll) }}">{$poll.title}</a>
+				</h4>
+			</div>
+
+			<!-- Описание (если есть и короткое) -->
+			<xf:if is="$poll.description AND strlen($poll.description) < 200">
+				<div class="rankedPoll-description">
+					{$poll.description|raw}
+				</div>
+			</xf:if>
+
+			<!-- Статус и статистика -->
+			<div class="rankedPoll-meta">
+				<ul class="listInline listInline--bullet">
+					<li>
+						<xf:if is="$isOpen">
+							<span class="label label--green">
+								<i class="fa fa-unlock"></i>
+								{{ phrase('open') }}
+							</span>
+						<xf:elseif is="$isClosed" />
+							<span class="label label--red">
+								<i class="fa fa-lock"></i>
+								{{ phrase('closed') }}
+							</span>
+						<xf:else />
+							<span class="label label--default">
+								{{ phrase('draft') }}
+							</span>
+						</xf:if>
+					</li>
+
+					<li>
+						<i class="fa fa-users"></i>
+						{{ phrase('votes') }}: <strong>{$poll.voter_count}</strong>
+					</li>
+
+					<li>
+						<i class="fa fa-list"></i>
+						{{ phrase('options') }}: <strong>{{ count($poll.Options) }}</strong>
+					</li>
+
+					<xf:if is="$poll.close_date">
+						<li>
+							<i class="fa fa-clock"></i>
+							<xf:if is="$isClosed">
+								{{ phrase('closed') }}: <xf:date time="{$poll.close_date}" />
+							<xf:else />
+								{{ phrase('closes') }}: <xf:date time="{$poll.close_date}" />
+							</xf:if>
+						</li>
+					</xf:if>
+
+					<xf:if is="$poll.open_date OR $poll.close_date">
+						<li>
+							<i class="fa fa-hourglass-half"></i>
+							<span class="rankedPoll-countdown"
+								data-open="{$poll.open_date}"
+								data-close="{$poll.close_date}"
+								data-opens="{{ phrase('alebarda_rankedpoll_opens_in') }}"
+								data-closes="{{ phrase('alebarda_rankedpoll_closes_in') }}"
+								data-closed="{{ phrase('closed') }}">
+							</span>
+						</li>
+					</xf:if>
+				</ul>
+			</div>
+
+			<!-- Индикация голосования пользователя -->
+			<xf:if is="$hasVoted">
+				<div class="rankedPoll-userStatus">
+					<i class="fa fa-check-circle" style="color: #4caf50;"></i>
+					{{ phrase('alebarda_rankedpoll_you_voted') }}
+				</div>
+			</xf:if>
+
+			<!-- Кнопки действий -->
+			<div class="rankedPoll-actions">
+				<xf:if is="$canVote">
+					<a href="{{ link('ranked-polls', $poll) }}" class="button button--primary button--small">
+						<i class="fa fa-vote-yea"></i>
+						<span class="button-text">
+							<xf:if is="$hasVoted AND $poll.allow_vote_change">
+								{{ phrase('change_vote') }}
+							<xf:else />
+								{{ phrase('vote_now') }}
+							</xf:if>
+						</span>
+					</a>
+				<xf:else />
+					<xf:if is="$voteError">
+						<span class="rankedPoll-error" style="color: #999;">
+							<i class="fa fa-info-circle"></i>
+							{{ $voteError }}
+						</span>
+					</xf:if>
+				</xf:if>
+
+				<xf:if is="$canViewResults">
+					<a href="{{ link('ranked-polls/results', $poll) }}" class="button button--link button--small">
+						<i class="fa fa-chart-bar"></i>
+						<span class="button-text">{{ phrase('view_results') }}</span>
+					</a>
+				</xf:if>
+
+				<xf:if is="$poll.show_voter_list">
+					<a href="{{ link('ranked-polls/voters', $poll) }}" class="button button--link button--small">
+						<i class="fa fa-users"></i>
+						<span class="button-text">{{ phrase('view_voters') }}</span>
+					</a>
+				</xf:if>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+(function() {
+	if (window.AlebardaRankedPollCountdown) {
+		window.AlebardaRankedPollCountdown();
+		return;
+	}
+
+	window.AlebardaRankedPollCountdown = function() {
+		var nodes = document.querySelectorAll('.rankedPoll-countdown');
+		if (!nodes.length) {
+			return;
+		}
+
+		function format(seconds) {
+			var s = Math.max(0, seconds);
+			var days = Math.floor(s / 86400);
+			var hours = Math.floor((s % 86400) / 3600);
+			var minutes = Math.floor((s % 3600) / 60);
+			if (days > 0) {
+				return days + 'd ' + hours + 'h';
+			}
+			if (hours > 0) {
+				return hours + 'h ' + minutes + 'm';
+			}
+			return minutes + 'm';
+		}
+
+		function update() {
+			var now = Math.floor(Date.now() / 1000);
+			nodes.forEach(function(node) {
+				var open = parseInt(node.getAttribute('data-open') || 0, 10);
+				var close = parseInt(node.getAttribute('data-close') || 0, 10);
+				var opensLabel = node.getAttribute('data-opens') || 'Opens in';
+				var closesLabel = node.getAttribute('data-closes') || 'Closes in';
+				var closedLabel = node.getAttribute('data-closed') || 'Closed';
+
+				if (open && now < open) {
+					node.textContent = opensLabel + ' ' + format(open - now);
+					return;
+				}
+				if (close && now < close) {
+					node.textContent = closesLabel + ' ' + format(close - now);
+					return;
+				}
+				if (close && now >= close) {
+					node.textContent = closedLabel;
+					return;
+				}
+				node.textContent = '';
+			});
+		}
+
+		update();
+		setInterval(update, 60000);
+	};
+
+	window.AlebardaRankedPollCountdown();
+})();
+</script>

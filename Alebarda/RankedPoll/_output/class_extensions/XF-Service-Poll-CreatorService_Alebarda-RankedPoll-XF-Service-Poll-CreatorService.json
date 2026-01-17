@@ -1,0 +1,6 @@
+{
+    "from_class": "XF\\Service\\Poll\\CreatorService",
+    "to_class": "Alebarda\\RankedPoll\\XF\\Service\\Poll\\CreatorService",
+    "execute_order": 10,
+    "active": true
+}

@@ -4,30 +4,128 @@ namespace Alebarda\RankedPoll\XF\Service\Poll;
 
 /**
  * Extends \XF\Service\Poll\Creator
+ *
+ * Adds support for creating ranked-choice polls
  */
 class Creator extends XFCP_Creator
 {
 	/**
-	 * Override setupPollData to capture ranked poll type
-	 *
-	 * @param array $options
+	 * Whether to enable ranked voting for this poll
+	 * @var bool
 	 */
-	public function setupPollData(array $options)
+	protected $enableRankedVoting = false;
+
+	/**
+	 * Ranked poll settings
+	 * @var array
+	 */
+	protected $rankedSettings = [
+		'results_visibility' => 'after_close',
+		'allowed_user_groups' => [],
+		'open_date' => null,
+		'close_date' => null,
+		'show_voter_list' => true
+	];
+
+	/**
+	 * Enable ranked-choice voting for this poll
+	 *
+	 * @param array $settings Override default settings
+	 * @return $this
+	 */
+	public function setRankedVoting(array $settings = [])
 	{
-		parent::setupPollData($options);
+		$this->enableRankedVoting = true;
+		$this->rankedSettings = array_merge($this->rankedSettings, $settings);
 
-		$poll = $this->poll;
+		return $this;
+	}
 
-		// Capture poll_type
-		if (isset($options['poll_type']))
+	/**
+	 * Set ranked poll visibility
+	 *
+	 * @param string $visibility 'realtime' or 'after_close'
+	 * @return $this
+	 */
+	public function setRankedResultsVisibility($visibility)
+	{
+		if (in_array($visibility, ['realtime', 'after_close']))
 		{
-			$poll->poll_type = $options['poll_type'];
+			$this->rankedSettings['results_visibility'] = $visibility;
 		}
 
-		// Capture ranked_results_visibility
-		if (isset($options['ranked_results_visibility']))
+		return $this;
+	}
+
+	/**
+	 * Set allowed user groups for voting
+	 *
+	 * @param array $groupIds Array of user group IDs
+	 * @return $this
+	 */
+	public function setAllowedUserGroups(array $groupIds)
+	{
+		$this->rankedSettings['allowed_user_groups'] = array_map('intval', $groupIds);
+
+		return $this;
+	}
+
+	/**
+	 * Set poll open and close dates
+	 *
+	 * @param int|null $openDate Unix timestamp
+	 * @param int|null $closeDate Unix timestamp
+	 * @return $this
+	 */
+	public function setRankedDates($openDate = null, $closeDate = null)
+	{
+		$this->rankedSettings['open_date'] = $openDate;
+		$this->rankedSettings['close_date'] = $closeDate;
+
+		return $this;
+	}
+
+	/**
+	 * Lifecycle hook: After saving poll
+	 * Save ranked poll metadata if enabled
+	 */
+	protected function _save()
+	{
+		// Call parent save to create the poll
+		$poll = parent::_save();
+
+		// If ranked voting is enabled and poll was created successfully
+		if ($this->enableRankedVoting && $poll && $poll->exists())
 		{
-			$poll->ranked_results_visibility = $options['ranked_results_visibility'];
+			$this->saveRankedMetadata($poll);
 		}
+
+		return $poll;
+	}
+
+	/**
+	 * Save ranked poll metadata to database
+	 *
+	 * @param \XF\Entity\Poll $poll
+	 */
+	protected function saveRankedMetadata($poll)
+	{
+		$db = \XF::db();
+
+		// Set poll_type to 'ranked'
+		$poll->poll_type = 'ranked';
+		$poll->ranked_results_visibility = $this->rankedSettings['results_visibility'];
+		$poll->save();
+
+		// Insert metadata
+		$db->insert('xf_alebarda_ranked_poll_metadata', [
+			'poll_id' => $poll->poll_id,
+			'is_ranked' => 1,
+			'results_visibility' => $this->rankedSettings['results_visibility'],
+			'allowed_user_groups' => json_encode($this->rankedSettings['allowed_user_groups']),
+			'open_date' => $this->rankedSettings['open_date'],
+			'close_date' => $this->rankedSettings['close_date'],
+			'show_voter_list' => $this->rankedSettings['show_voter_list'] ? 1 : 0
+		], false, 'poll_id = VALUES(poll_id)');
 	}
 }

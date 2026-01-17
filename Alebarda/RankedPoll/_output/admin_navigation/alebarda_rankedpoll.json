@@ -1,0 +1,7 @@
+{
+    "parent_navigation_id": "forums",
+    "display_order": 85,
+    "link": "ranked-polls",
+    "icon": "fa-poll",
+    "admin_permission_id": ""
+}

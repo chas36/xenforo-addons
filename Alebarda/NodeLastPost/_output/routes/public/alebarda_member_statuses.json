@@ -1,0 +1,11 @@
+{
+    "route_type": "public",
+    "route_prefix": "members",
+    "sub_name": "statuses",
+    "format": ":int<user_id>/statuses",
+    "build_class": "",
+    "build_method": "",
+    "controller": "Alebarda\\NodeLastPost:Member",
+    "context": "",
+    "action_prefix": "UserStatuses"
+}

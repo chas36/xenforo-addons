@@ -1,0 +1,22 @@
+{
+    "bb_code_id": "userlistnode",
+    "bb_code_mode": "callback",
+    "has_option": "yes",
+    "replace_html": "",
+    "replace_html_email": "",
+    "replace_text": "",
+    "callback_class": "Alebarda\\UserListByGroup\\BbCode\\UserListNode",
+    "callback_method": "renderUserListNode",
+    "option_regex": "",
+    "trim_lines_after": 0,
+    "plain_children": false,
+    "disable_smilies": false,
+    "disable_nl2br": false,
+    "disable_autolink": false,
+    "allow_empty": true,
+    "allow_signature": false,
+    "editor_icon_type": "",
+    "editor_icon_value": "",
+    "active": true,
+    "addon_id": "Alebarda/UserListByGroup"
+}

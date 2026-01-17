@@ -4,6 +4,6 @@
     "callback_class": "Alebarda\\RankedPoll\\Listener",
     "callback_method": "pollEntityPreSave",
     "active": true,
-    "hint": "",
-    "description": "Save poll_type and ranked_results_visibility when creating/editing polls"
+    "hint": "XF:Poll",
+    "description": "Set ranked poll type when creating poll with ranked voting enabled"
 }

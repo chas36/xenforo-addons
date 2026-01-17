@@ -1,0 +1,9 @@
+{
+    "template": "member_view",
+    "description": "Add Node Last Posts tab to member profile tabs",
+    "execution_order": 10,
+    "enabled": true,
+    "action": "str_replace",
+    "find": "<!--[XF:tabs:after_recent_content]-->",
+    "replace": "<!--[XF:tabs:after_recent_content]-->\n\t\t\t\t<a href=\"{{ link('members/node-last-posts', $user) }}\"\n\t\t\t\t\tclass=\"tabs-tab{{ $selectedTab == 'node_last_posts' ? ' is-active' : '' }}\"\n\t\t\t\t\tid=\"node-last-posts\"\n\t\t\t\t\trole=\"tab\">Последние сообщения по узлам</a>"
+}

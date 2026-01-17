@@ -1,0 +1,11 @@
+{
+    "route_type": "admin",
+    "route_prefix": "ranked-polls",
+    "sub_name": "",
+    "format": "",
+    "build_class": "",
+    "build_method": "",
+    "controller": "Alebarda\\RankedPoll:RankedPoll",
+    "context": "",
+    "action_prefix": ""
+}

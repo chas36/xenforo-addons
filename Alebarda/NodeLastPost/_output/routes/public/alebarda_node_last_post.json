@@ -1,0 +1,11 @@
+{
+    "route_type": "public",
+    "route_prefix": "node-last-post",
+    "sub_name": "",
+    "format": ":int<node_id>",
+    "build_class": "",
+    "build_method": "",
+    "controller": "Alebarda\\NodeLastPost:NodeLastPost",
+    "context": "",
+    "action_prefix": "Index"
+}

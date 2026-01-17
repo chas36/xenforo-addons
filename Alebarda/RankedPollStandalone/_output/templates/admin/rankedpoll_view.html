@@ -1,0 +1,231 @@
+<xf:title>{{ phrase('ranked_polls') }}: {{ $poll.title }}</xf:title>
+<xf:css src="rankedpoll.less" />
+
+<div class="block">
+	<div class="block-container">
+		<h2 class="block-header">
+			{{ $poll.title }}
+		</h2>
+
+		<div class="block-body">
+			<div class="block-row block-row--minor">
+				<dl class="pairs pairs--inline">
+					<dt>{{ phrase('status') }}</dt>
+					<dd>
+						<xf:if is="$poll.poll_status == 'open'">
+							<span class="label label--green">{{ phrase('open') }}</span>
+						<xf:elseif is="$poll.poll_status == 'closed'" />
+							<span class="label label--red">{{ phrase('closed') }}</span>
+						<xf:else />
+							<span class="label label--default">{{ phrase('draft') }}</span>
+						</xf:if>
+					</dd>
+				</dl>
+				<dl class="pairs pairs--inline">
+					<dt>{{ phrase('total_votes') }}</dt>
+					<dd>{$poll.voter_count}</dd>
+				</dl>
+				<dl class="pairs pairs--inline">
+					<dt>{{ phrase('views') }}</dt>
+					<dd>{$poll.view_count}</dd>
+				</dl>
+				<dl class="pairs pairs--inline">
+					<dt>{{ phrase('created') }}</dt>
+					<dd><xf:date time="{$poll.created_date}" /></dd>
+				</dl>
+			</div>
+
+			<div class="block-row">
+				<div class="buttonGroup">
+					<xf:button href="{{ link('ranked-polls') }}">
+						{{ phrase('back') }}
+					</xf:button>
+					<xf:button href="{{ link('ranked-polls/edit', $poll) }}" class="button--link">
+						{{ phrase('edit') }}
+					</xf:button>
+					<xf:button href="{{ link('canonical:ranked-polls', $poll) }}" class="button--link" target="_blank">
+						{{ phrase('view') }}
+					</xf:button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="block">
+	<div class="block-container">
+		<h2 class="block-header">{{ phrase('results') }}</h2>
+		<div class="block-body">
+			<xf:if is="$results.winner_id">
+				<div class="block-row block-row--highlighted">
+					<div class="contentRow">
+						<div class="contentRow-figure">
+							<i class="fa fa-trophy fa-2x" style="color: gold;"></i>
+						</div>
+						<div class="contentRow-main">
+							<h3 class="contentRow-title">
+								{{ phrase('winner') }}: {$optionNames.{$results.winner_id}}
+							</h3>
+							<div class="contentRow-snippet">
+								{{ phrase('alebarda_rankedpoll_condorcet_winner') }}
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="block-row">
+					<h3 class="block-minorHeader">{{ phrase('final_ranking') }}</h3>
+				</div>
+
+				<xf:foreach loop="$results.ranking" value="$optionId" key="$position">
+					<div class="block-row block-row--separated">
+						<div class="contentRow">
+							<div class="contentRow-figure">
+								<strong style="font-size: 1.5em; color: #888;">#{{ $position + 1 }}</strong>
+							</div>
+							<div class="contentRow-main">
+								<h4 class="contentRow-title">{$optionNames.{$optionId}}</h4>
+							</div>
+						</div>
+					</div>
+				</xf:foreach>
+
+				<xf:if is="$poll.voter_count">
+					<div class="block-row">
+						<h3 class="block-minorHeader">{{ phrase('alebarda_rankedpoll_first_choice_share') }}</h3>
+						<p class="block-rowMessage">{{ phrase('alebarda_rankedpoll_first_choice_explanation') }}</p>
+					</div>
+					<div class="block-row">
+						<table class="dataList dataList--separated">
+							<thead>
+								<tr>
+									<th>{{ phrase('option') }}</th>
+									<th style="width: 50%;">{{ phrase('percentage') }}</th>
+									<th class="dataList-cell--min">{{ phrase('votes') }}</th>
+								</tr>
+							</thead>
+							<tbody>
+								<xf:foreach loop="$options" value="$option">
+									<tr>
+										<td><strong>{$option.option_text}</strong></td>
+										<td>
+											<div class="rankedPoll-barTrack">
+												<xf:set var="$percentage" value="{{ $poll.voter_count ? ($option.times_ranked_first / $poll.voter_count) * 100 : 0 }}" />
+												<div class="rankedPoll-barFill" style="width: {$percentage}%">
+													<xf:if is="$percentage >= 10">
+														<span class="rankedPoll-barPct">{{ $percentage|number(0) }}%</span>
+													</xf:if>
+												</div>
+											</div>
+											<xf:if is="$percentage < 10 AND $percentage > 0">
+												<span class="rankedPoll-barPctOutside">{{ $percentage|number(0) }}%</span>
+											</xf:if>
+										</td>
+										<td class="dataList-cell--min">
+											<strong>{{ $option.times_ranked_first }}</strong> / {$poll.voter_count}
+										</td>
+									</tr>
+								</xf:foreach>
+							</tbody>
+						</table>
+					</div>
+				</xf:if>
+
+				<xf:if is="$results.pairwise_matrix">
+					<div class="block-row">
+						<h3 class="block-minorHeader">{{ phrase('pairwise_comparison_matrix') }}</h3>
+						<p class="block-rowMessage">
+							{{ phrase('alebarda_rankedpoll_pairwise_explanation') }}
+						</p>
+					</div>
+
+					<div class="block-row">
+						<div class="rankedPoll-matrixWrapper">
+							<table class="dataList dataList--compact rankedPoll-matrix">
+								<thead>
+									<tr>
+										<th class="rankedPoll-matrixCell--sticky"></th>
+										<xf:foreach loop="$results.ranking" value="$colId">
+											<th class="dataList-cell dataList-cell--min">
+												{$optionNames.{$colId}}
+											</th>
+										</xf:foreach>
+									</tr>
+								</thead>
+								<tbody>
+									<xf:foreach loop="$results.ranking" value="$rowId">
+										<tr>
+											<th class="dataList-cell dataList-cell--min rankedPoll-matrixCell--sticky">
+												{$optionNames.{$rowId}}
+											</th>
+											<xf:foreach loop="$results.ranking" value="$colId">
+												<td style="text-align: center;">
+													<xf:if is="$rowId == $colId">
+														-
+													<xf:else />
+														{$results.pairwise_matrix.{$rowId}.{$colId}}
+													</xf:if>
+												</td>
+											</xf:foreach>
+										</tr>
+									</xf:foreach>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</xf:if>
+			<xf:else />
+				<div class="block-row">
+					<div class="blockMessage blockMessage--none">
+						{{ phrase('no_votes_cast') }}
+					</div>
+				</div>
+			</xf:if>
+		</div>
+	</div>
+</div>
+
+<div class="block">
+	<div class="block-container">
+		<h2 class="block-header">{{ phrase('voters') }}</h2>
+		<div class="block-body">
+			<xf:if is="count($voters)">
+				<xf:foreach loop="$voters" value="$voter">
+					<div class="block-row block-row--separated">
+						<div class="contentRow">
+							<div class="contentRow-figure">
+								<xf:avatar user="{$voter}" size="s" />
+							</div>
+							<div class="contentRow-main">
+								<h3 class="contentRow-title">
+									<xf:username user="{$voter}" />
+								</h3>
+							</div>
+							<div class="contentRow-extra">
+								<xf:form action="{{ link('ranked-polls/remove-voter', $poll) }}" method="post" class="inline">
+									<xf:csrf />
+									<input type="hidden" name="user_id" value="{$voter.user_id}" />
+									<button type="submit" class="button button--small button--link button--danger">
+										{{ phrase('alebarda_rankedpoll_remove_votes') }}
+									</button>
+								</xf:form>
+							</div>
+						</div>
+					</div>
+				</xf:foreach>
+
+				<xf:if is="$total > $perPage">
+					<div class="block-row">
+						<xf:pagenav page="{$page}" perpage="{$perPage}" total="{$total}" link="ranked-polls/view" data="{{ {'poll_id': $poll.poll_id} }}" />
+					</div>
+				</xf:if>
+			<xf:else />
+				<div class="block-row">
+					<div class="blockMessage blockMessage--none">
+						{{ phrase('no_votes_cast') }}
+					</div>
+				</div>
+			</xf:if>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,27 @@
+<xf:title>{{ phrase('alebarda_rankedpoll_convert_to_ranked') }}</xf:title>
+
+<xf:form action="{{ link('ranked-polls/convert', $poll) }}" class="block" ajax="true">
+	<div class="block-container">
+		<div class="block-body">
+			<xf:inforow>
+				{{ phrase('alebarda_rankedpoll_convert_confirm', {'question': $poll.question, 'poll_id': $poll.poll_id}) }}
+			</xf:inforow>
+
+			<xf:inforow rowtype="confirm">
+				<dl class="pairs pairs--columns">
+					<dt>{{ phrase('question') }}:</dt>
+					<dd>{$poll.question}</dd>
+				</dl>
+				<dl class="pairs pairs--columns">
+					<dt>{{ phrase('responses') }}:</dt>
+					<dd>{$poll.responses|count}</dd>
+				</dl>
+				<dl class="pairs pairs--columns">
+					<dt>{{ phrase('votes') }}:</dt>
+					<dd>{$poll.voter_count}</dd>
+				</dl>
+			</xf:inforow>
+		</div>
+		<xf:submitrow submit="{{ phrase('confirm') }}" icon="save" sticky="true" />
+	</div>
+</xf:form>

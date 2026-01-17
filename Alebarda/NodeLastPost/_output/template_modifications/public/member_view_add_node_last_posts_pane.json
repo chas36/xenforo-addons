@@ -1,0 +1,9 @@
+{
+    "template": "member_view",
+    "description": "Add Node Last Posts pane to member profile",
+    "execution_order": 10,
+    "enabled": true,
+    "action": "str_replace",
+    "find": "<!--[XF:tab_panes:after_recent_content]-->",
+    "replace": "<!--[XF:tab_panes:after_recent_content]-->\n\t<li data-href=\"{{ link('members/node-last-posts', $user) }}\"\n\t\trole=\"tabpanel\"\n\t\taria-labelledby=\"node-last-posts\"\n\t\tclass=\"{{ $selectedTab == 'node_last_posts' ? 'is-active' : '' }}\">\n\t\t<div class=\"blockMessage\">{{ phrase('loading...') }}</div>\n\t</li>"
+}

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Simple script to convert a standard poll to ranked poll
+ * Script to convert a standard poll to ranked poll
  *
  * Usage: php convert_poll_to_ranked.php <poll_id>
  */
@@ -26,18 +26,25 @@ if (!$poll) {
 }
 
 echo "Converting Poll #{$pollId}: {$poll->question}\n";
-echo "Current type: {$poll->poll_type}\n";
+echo "Current type: " . ($poll->exists('poll_type') ? $poll->poll_type : 'standard (column not exists)') . "\n";
 
-if ($poll->poll_type === 'ranked') {
-    die("Poll is already ranked!\n");
-}
-
-// Update poll type
+// Update poll type via direct SQL (safest method)
 \XF::db()->update('xf_poll', [
-    'poll_type' => 'ranked',
-    'ranked_results_visibility' => 'after_close'
+    'poll_type' => 'ranked'
 ], 'poll_id = ?', $pollId);
 
-echo "\n✓ Successfully converted to ranked poll!\n";
-echo "Ranked results visibility: after_close\n";
+// Create metadata record
+\XF::db()->insert('xf_alebarda_ranked_poll_metadata', [
+    'poll_id' => $pollId,
+    'is_ranked' => 1,
+    'results_visibility' => 'realtime',
+    'allowed_user_groups' => null,
+    'open_date' => null,
+    'close_date' => $poll->close_date,
+    'show_voter_list' => 1
+], false, 'poll_id = VALUES(poll_id)');
+
+echo "\n✅ Successfully converted to ranked poll!\n";
+echo "Results visibility: realtime\n";
+echo "Show voter list: yes\n";
 echo "\nPoll URL: " . \XF::app()->router('public')->buildLink('canonical:polls', $poll) . "\n";

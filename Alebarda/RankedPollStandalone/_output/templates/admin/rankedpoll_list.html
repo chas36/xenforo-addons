@@ -1,0 +1,110 @@
+<xf:title>{{ phrase('ranked_polls') }}</xf:title>
+
+<div class="block">
+	<div class="block-container">
+		<div class="block-body">
+			<div class="block-row block-row--separated">
+				<a href="{{ link('ranked-polls/add') }}" class="button button--primary">
+					<i class="fa fa-plus"></i>
+					<span class="button-text">{{ phrase('add_ranked_poll') }}</span>
+				</a>
+			</div>
+		</div>
+	</div>
+</div>
+
+<xf:if is="count($polls)">
+	<div class="block">
+		<div class="block-container">
+			<div class="block-body">
+				<div class="dataList">
+					<table class="dataList-table">
+						<thead>
+							<tr>
+								<th class="dataList-cell--main">{{ phrase('title') }}</th>
+								<th class="dataList-cell--min" style="width: 15%;">{{ phrase('author') }}</th>
+								<th class="dataList-cell--min" style="width: 12%;">{{ phrase('votes') }}</th>
+								<th class="dataList-cell--min" style="width: 10%;">{{ phrase('status') }}</th>
+								<th class="dataList-cell--min" style="width: 15%;">{{ phrase('closes') }}</th>
+								<th class="dataList-cell--action dataList-cell--min">{{ phrase('actions') }}</th>
+							</tr>
+						</thead>
+						<tbody>
+							<xf:foreach loop="$polls" value="$poll">
+								<tr>
+									<td class="dataList-cell--main">
+										<a href="{{ link('ranked-polls/edit', $poll) }}"><strong>{{ $poll.title }}</strong></a>
+										<div class="dataList-subRow">
+											<ul class="listInline listInline--bullet listInline--selfInline">
+												<li>
+													<xf:if is="$poll.Creator">
+														<xf:username user="{$poll.Creator}" />
+													<xf:else />
+														{{ phrase('unknown') }}
+													</xf:if>
+												</li>
+												<li><xf:date time="{$poll.created_date}" /></li>
+												<li>{{ phrase('options') }}: {{ count($poll.Options) }}</li>
+											</ul>
+										</div>
+									</td>
+									<td class="dataList-cell--min dataList-cell--alt">
+										<xf:if is="$poll.Creator">
+											<xf:username user="{$poll.Creator}" />
+										<xf:else />
+											{{ phrase('unknown') }}
+										</xf:if>
+									</td>
+									<td class="dataList-cell--min dataList-cell--alt">
+										<strong>{$poll.voter_count}</strong>
+									</td>
+									<td class="dataList-cell--min">
+										<xf:if is="$poll.poll_status == 'open'">
+											<span class="label label--green">{{ phrase('open') }}</span>
+										<xf:elseif is="$poll.poll_status == 'closed'" />
+											<span class="label label--red">{{ phrase('closed') }}</span>
+										<xf:else />
+											<span class="label label--default">{{ phrase('draft') }}</span>
+										</xf:if>
+									</td>
+									<td class="dataList-cell--min dataList-cell--alt">
+										<xf:if is="$poll.close_date">
+											<xf:date time="{$poll.close_date}" />
+										<xf:else />
+											-
+										</xf:if>
+									</td>
+									<td class="dataList-cell--action dataList-cell--min">
+										<a href="{{ link('ranked-polls/view', $poll) }}" class="menu-linkRow" title="{{ phrase('view') }}" data-xf-click="tooltip">
+											<i class="fa fa-eye"></i>
+										</a>
+										<a href="{{ link('ranked-polls/edit', $poll) }}" class="menu-linkRow" title="{{ phrase('edit') }}" data-xf-click="tooltip">
+											<i class="fa fa-edit"></i>
+										</a>
+										<a href="{{ link('ranked-polls/delete', $poll) }}" class="menu-linkRow" title="{{ phrase('delete') }}" data-xf-click="overlay" data-xf-init="tooltip">
+											<i class="fa fa-trash-alt"></i>
+										</a>
+									</td>
+								</tr>
+							</xf:foreach>
+						</tbody>
+					</table>
+				</div>
+
+				<div class="block-row block-row--minor">
+					{{ phrase('showing_all_items') }}
+				</div>
+			</div>
+		</div>
+	</div>
+<xf:else />
+	<div class="block">
+		<div class="block-container">
+			<div class="block-body">
+				<div class="blockMessage">
+					{{ phrase('no_ranked_polls_have_been_created') }}
+				</div>
+			</div>
+		</div>
+	</div>
+</xf:if>
