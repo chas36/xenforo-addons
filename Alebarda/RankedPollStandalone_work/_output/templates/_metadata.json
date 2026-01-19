@@ -1,0 +1,42 @@
+{
+    "admin/rankedpoll_delete.html": {
+        "version_id": 1000000,
+        "version_string": "1.0.0",
+        "hash": "1cee155a79581e934f76611ff37b4ffe"
+    },
+    "admin/rankedpoll_edit.html": {
+        "version_id": 2010376,
+        "version_string": "2.1.9",
+        "hash": "15d6bfdef6c62b14073ae3df3e1a5684"
+    },
+    "admin/rankedpoll_list.html": {
+        "version_id": 1000000,
+        "version_string": "1.0.0",
+        "hash": "709814fd86a1eb18326901e3e4f130d8"
+    },
+    "admin/rankedpoll_view.html": {
+        "version_id": 2010373,
+        "version_string": "2.1.6",
+        "hash": "264c463be7baf87d66145642329dd15a"
+    },
+    "public/rankedpoll_bbcode_embed.html": {
+        "version_id": 1000000,
+        "version_string": "1.0.0",
+        "hash": "317b1be86ba00394de5f3a497cf553ea"
+    },
+    "public/rankedpoll_results.html": {
+        "version_id": 2010373,
+        "version_string": "2.1.6",
+        "hash": "8fc4184c0e2f95b6845c43ad95769f3e"
+    },
+    "public/rankedpoll_view.html": {
+        "version_id": 1000000,
+        "version_string": "1.0.0",
+        "hash": "19656eed8f43a62985df2fdbab918360"
+    },
+    "public/rankedpoll_voters.html": {
+        "version_id": 1000000,
+        "version_string": "1.0.0",
+        "hash": "5126ee435da50e829e87673c839dcfd0"
+    }
+}

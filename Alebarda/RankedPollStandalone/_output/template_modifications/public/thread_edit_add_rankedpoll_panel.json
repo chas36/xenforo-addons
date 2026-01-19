@@ -1,0 +1,9 @@
+{
+    "template": "thread_edit",
+    "description": "Unused for XF 2.3 thread type templates",
+    "execution_order": 11,
+    "enabled": false,
+    "action": "str_replace",
+    "find": "</xf:tabpanels>",
+    "replace": "<xf:tabpanel id=\"ranked_poll\">\n\t<xf:include template=\"rankedpoll_thread_tab\" />\n</xf:tabpanel>\n</xf:tabpanels>"
+}

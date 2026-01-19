@@ -1,0 +1,9 @@
+{
+    "template": "thread_view",
+    "description": "Add ranked poll block above messages",
+    "execution_order": 10,
+    "enabled": true,
+    "action": "preg_replace",
+    "find": "#<xf:extension id=\"above_messages\"[^>]*/?>#",
+    "replace": "<xf:include template=\"rankedpoll_thread_block\" />\n$0"
+}

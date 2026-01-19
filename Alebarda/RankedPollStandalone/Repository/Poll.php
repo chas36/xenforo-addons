@@ -26,6 +26,29 @@ class Poll extends Repository
     }
 
     /**
+     * Получить опрос, связанный с темой
+     *
+     * @param int $threadId
+     * @param array|string|null $with
+     * @return \Alebarda\RankedPollStandalone\Entity\Poll|null
+     */
+    public function getPollByThreadId($threadId, $with = null)
+    {
+        if (!$threadId) {
+            return null;
+        }
+
+        $finder = $this->finder('Alebarda\RankedPollStandalone:Poll')
+            ->where('thread_id', $threadId);
+
+        if ($with) {
+            $finder->with($with);
+        }
+
+        return $finder->fetchOne();
+    }
+
+    /**
      * Получить открытые опросы
      */
     public function findOpenPolls()
@@ -254,6 +277,128 @@ class Poll extends Repository
                 'times_ranked' => $stat['total_count']
             ], 'option_id = ?', $stat['option_id']);
         }
+    }
+
+    /**
+     * Создать или обновить опрос для темы
+     *
+     * @param \XF\Entity\Thread $thread
+     * @param array $input
+     * @param \XF\Entity\User $user
+     * @return PollEntity|null
+     */
+    public function savePollForThread(\XF\Entity\Thread $thread, array $input, \XF\Entity\User $user)
+    {
+        $poll = $this->getPollByThreadId($thread->thread_id, ['Options']);
+        $isNew = false;
+
+        if (!$poll) {
+            $poll = $this->em()->create('Alebarda\RankedPollStandalone:Poll');
+            $poll->thread_id = $thread->thread_id;
+            $poll->created_by_user_id = $user->user_id;
+            $poll->created_date = \XF::$time;
+            $poll->poll_status = 'open';
+            $isNew = true;
+        }
+
+        $title = trim($input['title'] ?? '');
+        $poll->title = $title !== '' ? $title : $thread->title;
+        $poll->description = $input['description'] ?? '';
+
+        $winnerMode = $input['winner_mode'] ?? $poll->winner_mode;
+        if (!in_array($winnerMode, ['single', 'top_n', 'seat_allocation'], true)) {
+            $winnerMode = $poll->winner_mode ?: 'single';
+        }
+        $poll->winner_mode = $winnerMode;
+
+        $winnerCount = (int)($input['winner_count'] ?? $poll->winner_count);
+        $poll->winner_count = $winnerCount > 0 ? $winnerCount : 1;
+
+        $visibility = $input['results_visibility'] ?? $poll->results_visibility;
+        if (!in_array($visibility, ['realtime', 'after_vote', 'after_close', 'never'], true)) {
+            $visibility = $poll->results_visibility ?: 'after_close';
+        }
+        $poll->results_visibility = $visibility;
+
+        $poll->show_voter_list = !empty($input['show_voter_list']);
+        $poll->allow_vote_change = !empty($input['allow_vote_change']);
+        $poll->require_all_ranked = !empty($input['require_all_ranked']);
+
+        $poll->open_date = $this->parseDateTime($input['open_date'] ?? null);
+        $poll->close_date = $this->parseDateTime($input['close_date'] ?? null);
+
+        $poll->save();
+
+        $options = $this->filterOptionsInput($input['options'] ?? []);
+        if (count($options) >= 2) {
+            $this->saveOptionsFromInput($poll, $options);
+        } elseif ($isNew) {
+            $poll->delete();
+            return null;
+        }
+
+        return $poll;
+    }
+
+    /**
+     * Подготовить варианты ответа
+     */
+    protected function filterOptionsInput(array $options)
+    {
+        $filtered = [];
+        foreach ($options as $option) {
+            $text = trim((string)($option['text'] ?? ''));
+            if ($text === '') {
+                continue;
+            }
+            $filtered[] = [
+                'text' => $text,
+                'description' => (string)($option['description'] ?? '')
+            ];
+        }
+
+        return $filtered;
+    }
+
+    /**
+     * Сохранить варианты ответа из формы
+     */
+    protected function saveOptionsFromInput(PollEntity $poll, array $options)
+    {
+        if ($poll->exists() && $poll->voter_count > 0) {
+            return;
+        }
+
+        $db = $this->db();
+        $db->delete('xf_alebarda_rankedpoll_option', 'poll_id = ?', $poll->poll_id);
+
+        $displayOrder = 0;
+        foreach ($options as $optionData) {
+            /** @var \Alebarda\RankedPollStandalone\Entity\PollOption $option */
+            $option = $this->em()->create('Alebarda\RankedPollStandalone:PollOption');
+            $option->poll_id = $poll->poll_id;
+            $option->option_text = $optionData['text'];
+            $option->option_description = $optionData['description'] ?? '';
+            $option->display_order = $displayOrder++;
+            $option->save();
+        }
+
+        $poll->invalidateResultsCache();
+        $poll->save();
+    }
+
+    /**
+     * Конвертировать дату из формы в timestamp
+     */
+    protected function parseDateTime($value)
+    {
+        if (!$value) {
+            return null;
+        }
+
+        $normalized = str_replace('T', ' ', $value);
+        $timestamp = strtotime($normalized);
+        return $timestamp ?: null;
     }
 
     /**

@@ -9,39 +9,70 @@ class UserPosts extends AbstractController
 {
     public function actionGet(ParameterBag $params)
     {
-        $userId = $this->filter('user_id', 'uint');
+        $userId = $this->filter('user_id', '?uint');
         $page = $this->filter('page', '?uint') ?: 1;
         $limit = $this->filter('limit', '?uint') ?: 50;
+        $nodeIds = $this->filter('node_ids', 'array-uint');
+        $nodeId = $this->filter('node_id', '?uint');
+        $dateFrom = $this->filter('date_from', '?uint');
+        $dateTo = $this->filter('date_to', '?uint');
 
         // Cap limit at 50
         if ($limit > 50) {
             $limit = 50;
         }
 
-        if (!$userId) {
+        if ($nodeId && !$nodeIds) {
+            $nodeIds = [$nodeId];
+        }
+
+        if (!$userId && !$nodeIds && !$dateFrom && !$dateTo) {
             return $this->apiError(
-                \XF::phrase('please_specify_valid_user_id'),
-                'missing_user_id',
+                'Please specify at least one filter (user_id, node_ids, date_from, date_to).',
+                'missing_filters',
                 [],
                 400
             );
         }
 
-        // Verify user exists
-        $user = $this->em()->find('XF:User', $userId);
-        if (!$user) {
+        if ($dateFrom && $dateTo && $dateFrom > $dateTo) {
             return $this->apiError(
-                \XF::phrase('requested_user_not_found'),
-                'user_not_found',
+                'date_from must be less than or equal to date_to.',
+                'invalid_date_range',
                 [],
-                404
+                400
             );
         }
 
-        // Find posts by this user
+        $user = null;
+        if ($userId) {
+            // Verify user exists
+            $user = $this->em()->find('XF:User', $userId);
+            if (!$user) {
+                return $this->apiError(
+                    \XF::phrase('requested_user_not_found'),
+                    'user_not_found',
+                    [],
+                    404
+                );
+            }
+        }
+
+        // Find posts using provided filters
         $finder = \XF::finder('XF:Post');
-        $finder->where('user_id', $userId)
-            ->with(['Thread', 'User'])
+        if ($userId) {
+            $finder->where('user_id', $userId);
+        }
+        if ($nodeIds) {
+            $finder->where('Thread.node_id', $nodeIds);
+        }
+        if ($dateFrom) {
+            $finder->where('post_date', '>=', $dateFrom);
+        }
+        if ($dateTo) {
+            $finder->where('post_date', '<=', $dateTo);
+        }
+        $finder->with(['Thread', 'User'])
             ->order('post_date', 'DESC')
             ->limitByPage($page, $limit);
 
@@ -84,7 +115,10 @@ class UserPosts extends AbstractController
                 'total' => $total
             ],
             'user_id' => $userId,
-            'username' => $user->username
+            'username' => $user ? $user->username : null,
+            'node_ids' => $nodeIds,
+            'date_from' => $dateFrom,
+            'date_to' => $dateTo
         ]);
     }
 }

@@ -26,6 +26,7 @@ class Setup extends AbstractSetup
         $sm->createTable('xf_alebarda_rankedpoll', function(Create $table)
         {
             $table->addColumn('poll_id', 'int')->autoIncrement();
+            $table->addColumn('thread_id', 'int')->nullable()->comment('XF thread_id for linked threads');
             $table->addColumn('title', 'varchar', 255);
             $table->addColumn('description', 'text')->nullable();
 
@@ -71,6 +72,7 @@ class Setup extends AbstractSetup
             $table->addPrimaryKey('poll_id');
             $table->addKey(['poll_status', 'open_date', 'close_date'], 'idx_status_dates');
             $table->addKey('created_by_user_id', 'idx_created_by');
+            $table->addKey('thread_id', 'idx_thread_id');
         });
 
         // Таблица: xf_alebarda_rankedpoll_option (варианты ответов)
@@ -145,6 +147,14 @@ class Setup extends AbstractSetup
             $table->addColumn('allocation_results', 'mediumtext')
                 ->nullable()
                 ->after('cached_results');
+        });
+    }
+
+    public function upgrade2010378Step1()
+    {
+        $this->schemaManager()->alterTable('xf_alebarda_rankedpoll', function(Alter $table) {
+            $table->addColumn('thread_id', 'int')->nullable()->after('poll_id');
+            $table->addKey('thread_id', 'idx_thread_id');
         });
     }
 }

@@ -1,0 +1,390 @@
+<xf:title>{{ $poll.title }}</xf:title>
+<xf:css src="rankedpoll.less" />
+
+<div class="block">
+	<div class="block-container">
+		<h2 class="block-header">
+			<span class="block-header-icon">
+				<i class="fa fa-poll"></i>
+			</span>
+			{{ $poll.title }}
+		</h2>
+
+		<div class="block-body">
+			<xf:if is="$poll.description">
+				<div class="block-row block-row--minor">
+					{$poll.description|raw}
+				</div>
+			</xf:if>
+
+			<div class="block-row block-row--minor">
+				<dl class="pairs pairs--inline">
+					<dt>{{ phrase('status') }}</dt>
+					<dd>
+						<xf:if is="$poll.poll_status == 'open' AND $poll.isOpen()">
+							<span class="label label--green">{{ phrase('open') }}</span>
+						<xf:elseif is="$poll.poll_status == 'closed' OR $poll.isClosed()" />
+							<span class="label label--red">{{ phrase('closed') }}</span>
+						<xf:else />
+							<span class="label label--default">{{ phrase('draft') }}</span>
+						</xf:if>
+					</dd>
+				</dl>
+
+				<dl class="pairs pairs--inline">
+					<dt>{{ phrase('votes') }}</dt>
+					<dd>{$poll.voter_count}</dd>
+				</dl>
+
+				<xf:if is="$poll.close_date">
+					<dl class="pairs pairs--inline">
+						<dt>{{ phrase('closes') }}</dt>
+						<dd><xf:date time="{$poll.close_date}" /></dd>
+					</dl>
+				</xf:if>
+
+				<xf:if is="$poll.open_date OR $poll.close_date">
+					<dl class="pairs pairs--inline">
+						<dt>{{ phrase('alebarda_rankedpoll_countdown') }}</dt>
+						<dd>
+							<span class="rankedPoll-countdown"
+								data-open="{$poll.open_date}"
+								data-close="{$poll.close_date}"
+								data-opens="{{ phrase('alebarda_rankedpoll_opens_in') }}"
+								data-closes="{{ phrase('alebarda_rankedpoll_closes_in') }}"
+								data-closed="{{ phrase('closed') }}">
+							</span>
+						</dd>
+					</dl>
+				</xf:if>
+			</div>
+
+			<xf:if is="$canVote">
+				<!-- Форма голосования -->
+				<xf:form action="{{ link('ranked-polls/vote', $poll) }}" method="post" class="block-body" ajax="true">
+					<div class="block-row">
+						<h3 class="block-minorHeader">{{ phrase('rank_options') }}</h3>
+						<p class="block-rowMessage">
+							{{ phrase('alebarda_rankedpoll_rank_instructions') }}
+						</p>
+						<p class="block-rowMessage rankedPoll-hint">
+							{{ phrase('alebarda_rankedpoll_drag_hint') }}
+						</p>
+					</div>
+
+					<div class="block-row">
+						<div class="rankedPoll-rankings" data-require-all="{$poll.require_all_ranked}">
+							<div class="rankedPoll-rankingsCol">
+								<div class="rankedPoll-rankingsHeader">
+									<h4 class="block-minorHeader">{{ phrase('alebarda_rankedpoll_ranked_list') }}</h4>
+									<xf:if is="!$poll.require_all_ranked">
+										<button type="button" class="button button--small rankedPoll-reset">
+											{{ phrase('alebarda_rankedpoll_reset_order') }}
+										</button>
+									</xf:if>
+								</div>
+								<ol class="rankedPoll-list rankedPoll-list--ranked">
+									<xf:foreach loop="$rankedOptions" value="$item" key="$i">
+										<li class="rankedPoll-item" draggable="true" data-option-id="{$item.option.option_id}">
+											<span class="rankedPoll-grip"><i class="fa fa-grip-vertical"></i></span>
+											<span class="rankedPoll-rank">#{{ $item.rank ? $item.rank : ($i + 1) }}</span>
+											<div class="rankedPoll-itemText">
+												<div class="rankedPoll-itemTitle">{$item.option.option_text}</div>
+												<xf:if is="$item.option.option_description">
+													<div class="rankedPoll-itemDesc">{$item.option.option_description}</div>
+												</xf:if>
+											</div>
+											<xf:if is="!$poll.require_all_ranked">
+												<button type="button" class="button button--link rankedPoll-unrank" aria-label="{{ phrase('alebarda_rankedpoll_unrank') }}">
+													<i class="fa fa-times"></i>
+												</button>
+											</xf:if>
+											<input type="hidden" name="rankings[{$item.option.option_id}]" value="{{ $item.rank ? $item.rank : ($i + 1) }}" />
+										</li>
+									</xf:foreach>
+								</ol>
+							</div>
+
+							<xf:if is="!$poll.require_all_ranked">
+								<div class="rankedPoll-rankingsCol rankedPoll-rankingsCol--unranked">
+									<div class="rankedPoll-rankingsHeader">
+										<h4 class="block-minorHeader">{{ phrase('alebarda_rankedpoll_unranked_list') }}</h4>
+									</div>
+									<ul class="rankedPoll-list rankedPoll-list--unranked">
+										<xf:foreach loop="$unrankedOptions" value="$option">
+											<li class="rankedPoll-item" draggable="true" data-option-id="{$option.option_id}">
+												<span class="rankedPoll-grip"><i class="fa fa-grip-vertical"></i></span>
+												<span class="rankedPoll-rank">-</span>
+												<div class="rankedPoll-itemText">
+													<div class="rankedPoll-itemTitle">{$option.option_text}</div>
+													<xf:if is="$option.option_description">
+														<div class="rankedPoll-itemDesc">{$option.option_description}</div>
+													</xf:if>
+												</div>
+												<input type="hidden" name="rankings[{$option.option_id}]" value="0" />
+											</li>
+										</xf:foreach>
+									</ul>
+								</div>
+							</xf:if>
+						</div>
+					</div>
+
+					<div class="block-row block-row--separated">
+						<button type="submit" class="button button--primary">
+							<span class="button-text">{{ phrase('cast_vote') }}</span>
+						</button>
+					</div>
+				</xf:form>
+
+			<xf:elseif is="$voteError" />
+				<!-- Сообщение об ошибке -->
+				<div class="block-row">
+					<div class="blockMessage blockMessage--error">
+						{{ $voteError }}
+					</div>
+				</div>
+			</xf:if>
+
+			<!-- Ссылки на результаты и список голосовавших -->
+			<div class="block-row block-row--separated">
+				<div class="buttonGroup">
+					<xf:if is="$canViewResults">
+						<a href="{{ link('ranked-polls/results', $poll) }}" class="button">
+							<i class="fa fa-chart-bar"></i>
+							<span class="button-text">{{ phrase('view_results') }}</span>
+						</a>
+					</xf:if>
+
+					<xf:if is="$poll.show_voter_list">
+						<a href="{{ link('ranked-polls/voters', $poll) }}" class="button">
+							<i class="fa fa-users"></i>
+							<span class="button-text">{{ phrase('view_voters') }}</span>
+						</a>
+					</xf:if>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+(function() {
+	var root = document.querySelector('.rankedPoll-rankings');
+	if (!root) {
+		return;
+	}
+
+	var rankedList = root.querySelector('.rankedPoll-list--ranked');
+	var unrankedList = root.querySelector('.rankedPoll-list--unranked');
+	var requireAll = root.getAttribute('data-require-all') === '1';
+	var dragged = null;
+	var touchStartY = 0;
+	var touchElement = null;
+
+	function updateRanks() {
+		var index = 1;
+		if (rankedList) {
+			rankedList.querySelectorAll('.rankedPoll-item').forEach(function(item) {
+				var rank = item.querySelector('.rankedPoll-rank');
+				var input = item.querySelector('input[type="hidden"]');
+				if (rank) {
+					rank.textContent = '#' + index;
+				}
+				if (input) {
+					input.value = index;
+				}
+				index++;
+			});
+		}
+		if (unrankedList) {
+			unrankedList.querySelectorAll('.rankedPoll-item').forEach(function(item) {
+				var rank = item.querySelector('.rankedPoll-rank');
+				var input = item.querySelector('input[type="hidden"]');
+				if (rank) {
+					rank.textContent = '-';
+				}
+				if (input) {
+					input.value = 0;
+				}
+			});
+		}
+	}
+
+	function getElementAtPoint(x, y, excludeElement) {
+		if (excludeElement) {
+			excludeElement.style.pointerEvents = 'none';
+		}
+		var elem = document.elementFromPoint(x, y);
+		if (excludeElement) {
+			excludeElement.style.pointerEvents = '';
+		}
+		return elem;
+	}
+
+	// Desktop drag events
+	root.addEventListener('dragstart', function(event) {
+		var item = event.target.closest('.rankedPoll-item');
+		if (!item) {
+			return;
+		}
+		dragged = item;
+		item.classList.add('is-dragging');
+		event.dataTransfer.effectAllowed = 'move';
+	});
+
+	root.addEventListener('dragover', function(event) {
+		var list = event.target.closest('.rankedPoll-list');
+		if (!list || !dragged) {
+			return;
+		}
+		event.preventDefault();
+		var before = event.target.closest('.rankedPoll-item');
+		if (before && before !== dragged && before.parentNode === list) {
+			list.insertBefore(dragged, before);
+		} else if (list && dragged.parentNode !== list) {
+			list.appendChild(dragged);
+		}
+	});
+
+	root.addEventListener('drop', function(event) {
+		event.preventDefault();
+		updateRanks();
+	});
+
+	root.addEventListener('dragend', function() {
+		if (dragged) {
+			dragged.classList.remove('is-dragging');
+		}
+		dragged = null;
+		updateRanks();
+	});
+
+	// Touch events for mobile
+	root.addEventListener('touchstart', function(event) {
+		var item = event.target.closest('.rankedPoll-item');
+		if (!item || event.target.closest('.rankedPoll-unrank')) {
+			return;
+		}
+		touchElement = item;
+		touchStartY = event.touches[0].clientY;
+		item.classList.add('is-touching');
+	}, {passive: true});
+
+	root.addEventListener('touchmove', function(event) {
+		if (!touchElement) {
+			return;
+		}
+		event.preventDefault();
+
+		var touch = event.touches[0];
+		var currentY = touch.clientY;
+
+		// Visual feedback
+		touchElement.style.transform = 'translateY(' + (currentY - touchStartY) + 'px)';
+		touchElement.classList.add('is-dragging');
+
+		// Find the list and item under touch
+		var elementBelow = getElementAtPoint(touch.clientX, currentY, touchElement);
+		var targetItem = elementBelow ? elementBelow.closest('.rankedPoll-item') : null;
+		var targetList = elementBelow ? elementBelow.closest('.rankedPoll-list') : null;
+
+		if (targetList && targetItem && targetItem !== touchElement) {
+			var rect = targetItem.getBoundingClientRect();
+			if (currentY < rect.top + rect.height / 2) {
+				targetList.insertBefore(touchElement, targetItem);
+			} else {
+				targetList.insertBefore(touchElement, targetItem.nextSibling);
+			}
+			touchStartY = currentY;
+			touchElement.style.transform = '';
+		} else if (targetList && !targetItem) {
+			targetList.appendChild(touchElement);
+			touchStartY = currentY;
+			touchElement.style.transform = '';
+		}
+	}, {passive: false});
+
+	root.addEventListener('touchend', function() {
+		if (touchElement) {
+			touchElement.style.transform = '';
+			touchElement.classList.remove('is-dragging', 'is-touching');
+			touchElement = null;
+		}
+		updateRanks();
+	});
+
+	// Click events for unrank and reset buttons
+	root.addEventListener('click', function(event) {
+		var unrank = event.target.closest('.rankedPoll-unrank');
+		if (unrank && !requireAll && unrankedList) {
+			event.preventDefault();
+			event.stopPropagation();
+			var item = unrank.closest('.rankedPoll-item');
+			unrankedList.appendChild(item);
+			updateRanks();
+			return;
+		}
+		var reset = event.target.closest('.rankedPoll-reset');
+		if (reset && !requireAll && unrankedList) {
+			event.preventDefault();
+			var items = rankedList.querySelectorAll('.rankedPoll-item');
+			items.forEach(function(item) {
+				unrankedList.appendChild(item);
+			});
+			updateRanks();
+		}
+	});
+
+	updateRanks();
+})();
+
+(function() {
+	var nodes = document.querySelectorAll('.rankedPoll-countdown');
+	if (!nodes.length) {
+		return;
+	}
+
+	function format(seconds) {
+		var s = Math.max(0, seconds);
+		var days = Math.floor(s / 86400);
+		var hours = Math.floor((s % 86400) / 3600);
+		var minutes = Math.floor((s % 3600) / 60);
+		if (days > 0) {
+			return days + 'd ' + hours + 'h';
+		}
+		if (hours > 0) {
+			return hours + 'h ' + minutes + 'm';
+		}
+		return minutes + 'm';
+	}
+
+	function update() {
+		var now = Math.floor(Date.now() / 1000);
+		nodes.forEach(function(node) {
+			var open = parseInt(node.getAttribute('data-open') || 0, 10);
+			var close = parseInt(node.getAttribute('data-close') || 0, 10);
+			var opensLabel = node.getAttribute('data-opens') || 'Opens in';
+			var closesLabel = node.getAttribute('data-closes') || 'Closes in';
+			var closedLabel = node.getAttribute('data-closed') || 'Closed';
+
+			if (open && now < open) {
+				node.textContent = opensLabel + ' ' + format(open - now);
+				return;
+			}
+			if (close && now < close) {
+				node.textContent = closesLabel + ' ' + format(close - now);
+				return;
+			}
+			if (close && now >= close) {
+				node.textContent = closedLabel;
+				return;
+			}
+			node.textContent = '';
+		});
+	}
+
+	update();
+	setInterval(update, 60000);
+})();
+</script>

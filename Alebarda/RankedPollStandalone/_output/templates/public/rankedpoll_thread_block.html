@@ -1,0 +1,14 @@
+<xf:if is="$rankedPoll && $rankedPoll.canView()">
+	<div class="block">
+		<xf:include template="rankedpoll_bbcode_embed" vars="{
+			'poll': $rankedPoll,
+			'signature': $rankedPollSignature,
+			'canVote': $rankedPollCanVote,
+			'voteError': $rankedPollVoteError,
+			'hasVoted': $rankedPollHasVoted,
+			'canViewResults': $rankedPollCanViewResults,
+			'isOpen': $rankedPollIsOpen,
+			'isClosed': $rankedPollIsClosed
+		}" />
+	</div>
+</xf:if>

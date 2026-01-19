@@ -8,6 +8,7 @@ use XF\Mvc\Entity\Structure;
 /**
  * COLUMNS
  * @property int $poll_id
+ * @property int|null $thread_id
  * @property string $title
  * @property string $description
  * @property int $created_by_user_id
@@ -396,6 +397,7 @@ class Poll extends Entity
 
         $structure->columns = [
             'poll_id' => ['type' => self::UINT, 'autoIncrement' => true],
+            'thread_id' => ['type' => self::UINT, 'nullable' => true, 'default' => null],
             'title' => ['type' => self::STR, 'maxLength' => 255, 'required' => true],
             'description' => ['type' => self::STR, 'default' => ''],
             'created_by_user_id' => ['type' => self::UINT, 'default' => 0],

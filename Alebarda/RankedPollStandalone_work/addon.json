@@ -1,0 +1,17 @@
+{
+    "legacy_addon_id": "",
+    "title": "Ranked Poll Standalone (BB Code only)",
+    "description": "Minimal BB code addon to embed standalone ranked polls. Does NOT extend XenForo core.",
+    "version_id": 2010377,
+    "version_string": "2.1.10",
+    "dev": "",
+    "dev_url": "",
+    "faq_url": "",
+    "support_url": "",
+    "extra_urls": [],
+    "require": {
+        "XF": [2030000, "XenForo 2.3.0+"],
+        "php": ["7.2.0", "PHP 7.2.0+"]
+    },
+    "icon": ""
+}

@@ -1,0 +1,50 @@
+<xf:title>{{ phrase('confirm_deletion') }}</xf:title>
+
+<xf:form action="{{ link('ranked-polls/delete', $poll) }}" class="block" ajax="true">
+	<div class="block-container">
+		<div class="block-body">
+			<div class="block-row block-row--minor">
+				{{ phrase('please_confirm_that_you_want_to_delete_the_following') }}:
+			</div>
+
+			<xf:formrow>
+				<strong>{$poll.title}</strong>
+			</xf:formrow>
+
+			<xf:formrow label="{{ phrase('poll_stats') }}:">
+				<dl class="pairs pairs--columns pairs--fixedSmall">
+					<dt>{{ phrase('total_votes') }}:</dt>
+					<dd>{$poll.voter_count}</dd>
+
+					<dt>{{ phrase('options') }}:</dt>
+					<dd>{{ count($poll.Options) }}</dd>
+
+					<dt>{{ phrase('status') }}:</dt>
+					<dd>
+						<xf:if is="$poll.poll_status == 'open'">
+							{{ phrase('open') }}
+						<xf:elseif is="$poll.poll_status == 'closed'" />
+							{{ phrase('closed') }}
+						<xf:else />
+							{{ phrase('draft') }}
+						</xf:if>
+					</dd>
+
+					<dt>{{ phrase('created') }}:</dt>
+					<dd><xf:date time="{$poll.created_date}" /></dd>
+				</dl>
+			</xf:formrow>
+
+			<xf:if is="$poll.voter_count > 0">
+				<xf:formrow>
+					<div class="blockMessage blockMessage--important">
+						<i class="fa fa-exclamation-triangle"></i>
+						{{ phrase('alebarda_rankedpoll_delete_warning', {'votes': $poll.voter_count}) }}
+					</div>
+				</xf:formrow>
+			</xf:if>
+		</div>
+
+		<xf:submitrow submit="{{ phrase('delete') }}" icon="delete" />
+	</div>
+</xf:form>

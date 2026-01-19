@@ -1,0 +1,9 @@
+{
+    "template": "thread_create",
+    "description": "Unused for XF 2.3 thread type templates",
+    "execution_order": 10,
+    "enabled": false,
+    "action": "str_replace",
+    "find": "</xf:tabs>",
+    "replace": "<xf:tab id=\"ranked_poll\">{{ phrase('ranked_poll') }}</xf:tab>\n</xf:tabs>"
+}

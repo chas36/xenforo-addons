@@ -1,0 +1,159 @@
+// Стили для BB Code embed ranked poll
+
+.bbCodeBlock--rankedPoll {
+	margin: 1em 0;
+	border: 1px solid @xf-borderColorHeavy;
+	border-radius: @xf-borderRadiusMedium;
+	background: @xf-contentBg;
+
+	.bbCodeBlock-title {
+		padding: @xf-paddingMedium;
+		background: @xf-contentAltBg;
+		border-bottom: 1px solid @xf-borderColorLight;
+		font-weight: bold;
+
+		.bbCodeBlock-title-icon {
+			margin-right: 0.5em;
+			color: @xf-textColorMuted;
+		}
+	}
+
+	.bbCodeBlock-content {
+		padding: @xf-paddingLarge;
+	}
+}
+
+.rankedPoll-embed {
+
+	.rankedPoll-header {
+		margin-bottom: @xf-paddingMedium;
+	}
+
+	.rankedPoll-title {
+		margin: 0;
+		font-size: 1.2em;
+		font-weight: 600;
+
+		a {
+			color: @xf-textColorFeature;
+			text-decoration: none;
+
+			&:hover {
+				color: @xf-linkColor;
+				text-decoration: underline;
+			}
+		}
+	}
+
+	.rankedPoll-description {
+		margin: @xf-paddingMedium 0;
+		color: @xf-textColorMuted;
+		font-size: 0.95em;
+		line-height: 1.5;
+	}
+
+	.rankedPoll-meta {
+		margin: @xf-paddingMedium 0;
+		padding: @xf-paddingMedium;
+		background: @xf-contentAltBg;
+		border-radius: @xf-borderRadiusSmall;
+
+		ul {
+			margin: 0;
+		}
+
+		.label {
+			vertical-align: middle;
+		}
+
+		i {
+			margin-right: 0.3em;
+			opacity: 0.7;
+		}
+	}
+
+	.rankedPoll-userStatus {
+		margin: @xf-paddingMedium 0;
+		padding: @xf-paddingSmall @xf-paddingMedium;
+		background: fade(@xf-successBg, 20%);
+		border-left: 3px solid @xf-successBg;
+		border-radius: @xf-borderRadiusSmall;
+		color: @xf-successText;
+		font-size: 0.95em;
+
+		i {
+			margin-right: 0.5em;
+		}
+	}
+
+	.rankedPoll-error {
+		display: inline-block;
+		padding: @xf-paddingSmall @xf-paddingMedium;
+		font-size: 0.9em;
+
+		i {
+			margin-right: 0.3em;
+		}
+	}
+
+	.rankedPoll-actions {
+		margin-top: @xf-paddingLarge;
+		padding-top: @xf-paddingMedium;
+		border-top: 1px solid @xf-borderColorLight;
+
+		.button {
+			margin-right: @xf-paddingSmall;
+			margin-bottom: @xf-paddingSmall;
+
+			i {
+				margin-right: 0.3em;
+			}
+		}
+	}
+
+	.rankedPoll-countdown {
+		display: inline-block;
+		padding: 2px 8px;
+		background: fadeout(@xf-linkColor, 85%);
+		border-radius: @xf-borderRadiusSmall;
+		color: @xf-linkColor;
+		font-weight: 600;
+		font-size: @xf-fontSizeSmaller;
+		font-variant-numeric: tabular-nums;
+		min-width: 60px;
+		text-align: center;
+
+		&:empty {
+			display: none;
+		}
+	}
+}
+
+// Адаптивность для мобильных
+@media (max-width: @xf-responsiveMedium) {
+	.rankedPoll-embed {
+		.rankedPoll-meta {
+			ul {
+				display: block;
+
+				li {
+					display: block;
+					margin-bottom: @xf-paddingSmall;
+
+					&:last-child {
+						margin-bottom: 0;
+					}
+				}
+			}
+		}
+
+		.rankedPoll-actions {
+			.button {
+				display: block;
+				width: 100%;
+				margin-right: 0;
+				text-align: center;
+			}
+		}
+	}
+}

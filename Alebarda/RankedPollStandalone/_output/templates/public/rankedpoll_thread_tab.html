@@ -1,0 +1,320 @@
+<xf:set var="$pollInput" value="{$rankedPollInput}" />
+<xf:set var="$poll" value="{$rankedPoll}" />
+<xf:set var="$hasInput" value="{{ $pollInput ? 1 : 0 }}" />
+
+<xf:set var="$isEnabled" value="{{ $poll ? 1 : 0 }}" />
+<xf:if is="$hasInput">
+	<xf:if is="$pollInput.enabled">
+		<xf:set var="$isEnabled" value="1" />
+	<xf:else />
+		<xf:set var="$isEnabled" value="0" />
+	</xf:if>
+</xf:if>
+
+<xf:set var="$pollTitle" value="{$poll.title}" />
+<xf:if is="$hasInput && $pollInput.title is not empty">
+	<xf:set var="$pollTitle" value="{$pollInput.title}" />
+</xf:if>
+
+<xf:set var="$pollDescription" value="{$poll.description}" />
+<xf:if is="$hasInput && $pollInput.description is not empty">
+	<xf:set var="$pollDescription" value="{$pollInput.description}" />
+</xf:if>
+
+<xf:set var="$winnerMode" value="{$poll.winner_mode}" />
+<xf:if is="$hasInput && $pollInput.winner_mode is not empty">
+	<xf:set var="$winnerMode" value="{$pollInput.winner_mode}" />
+</xf:if>
+<xf:if is="$winnerMode is empty">
+	<xf:set var="$winnerMode" value="single" />
+</xf:if>
+
+<xf:set var="$winnerCount" value="{$poll.winner_count}" />
+<xf:if is="$hasInput && $pollInput.winner_count">
+	<xf:set var="$winnerCount" value="{$pollInput.winner_count}" />
+</xf:if>
+<xf:if is="$winnerCount is empty">
+	<xf:set var="$winnerCount" value="1" />
+</xf:if>
+
+<xf:set var="$resultsVisibility" value="{$poll.results_visibility}" />
+<xf:if is="$hasInput && $pollInput.results_visibility is not empty">
+	<xf:set var="$resultsVisibility" value="{$pollInput.results_visibility}" />
+</xf:if>
+<xf:if is="$resultsVisibility is empty">
+	<xf:set var="$resultsVisibility" value="after_close" />
+</xf:if>
+
+<xf:set var="$showVoterList" value="{$poll.show_voter_list}" />
+<xf:set var="$allowVoteChange" value="{$poll.allow_vote_change}" />
+<xf:set var="$requireAllRanked" value="{$poll.require_all_ranked}" />
+
+<xf:if is="$hasInput">
+	<xf:if is="$pollInput.show_voter_list">
+		<xf:set var="$showVoterList" value="1" />
+	<xf:else />
+		<xf:set var="$showVoterList" value="0" />
+	</xf:if>
+
+	<xf:if is="$pollInput.allow_vote_change">
+		<xf:set var="$allowVoteChange" value="1" />
+	<xf:else />
+		<xf:set var="$allowVoteChange" value="0" />
+	</xf:if>
+
+	<xf:if is="$pollInput.require_all_ranked">
+		<xf:set var="$requireAllRanked" value="1" />
+	<xf:else />
+		<xf:set var="$requireAllRanked" value="0" />
+	</xf:if>
+</xf:if>
+
+<xf:set var="$openDateTime" value="{$rankedPollOpenDateTime}" />
+<xf:set var="$closeDateTime" value="{$rankedPollCloseDateTime}" />
+<xf:if is="$hasInput && $pollInput.open_date is not empty">
+	<xf:set var="$openDateTime" value="{$pollInput.open_date}" />
+</xf:if>
+<xf:if is="$hasInput && $pollInput.close_date is not empty">
+	<xf:set var="$closeDateTime" value="{$pollInput.close_date}" />
+</xf:if>
+
+<div class="js-rankedPollThread" data-ranked-poll-index="0">
+	<xf:checkboxrow label="{{ phrase('ranked_poll') }}">
+		<xf:option name="ranked_poll[enabled]" value="1"
+			label="{{ phrase('alebarda_rankedpoll_enable_thread') }}"
+			hint="{{ phrase('alebarda_rankedpoll_enable_thread_hint') }}"
+			selected="{$isEnabled}" />
+	</xf:checkboxrow>
+
+	<div class="js-rankedPollFields" style="{{ $isEnabled ? '' : 'display: none;' }}">
+		<xf:textboxrow name="ranked_poll[title]" value="{$pollTitle}"
+			label="{{ phrase('alebarda_rankedpoll_title') }}" required="required" />
+
+		<xf:textarearow name="ranked_poll[description]" value="{$pollDescription}"
+			label="{{ phrase('alebarda_rankedpoll_description') }}"
+			hint="{{ phrase('optional') }}" rows="3"
+			explain="{{ phrase('alebarda_rankedpoll_description_html_hint') }}" />
+
+		<hr class="formRowSep" />
+
+		<xf:formrow label="{{ phrase('poll_options') }}" explain="{{ phrase('alebarda_rankedpoll_options_explain') }}">
+			<div class="js-rankedPollOptions">
+				<xf:if is="$rankedPollOptions is not empty">
+					<xf:foreach loop="$rankedPollOptions" value="$option" key="$i">
+						<div class="inputGroup" data-option-index="{$i}">
+							<input type="text" name="ranked_poll[options][{$i}][text]" value="{$option.option_text}"
+								class="input" placeholder="{{ phrase('option_text') }}" required />
+							<span class="inputGroup-splitter"></span>
+							<button type="button" class="button button--link js-rankedPollRemoveOption">
+								<i class="fa fa-times"></i>
+							</button>
+						</div>
+					</xf:foreach>
+				<xf:else />
+					<div class="inputGroup" data-option-index="0">
+						<input type="text" name="ranked_poll[options][0][text]" class="input"
+							placeholder="{{ phrase('option_text') }}" required />
+						<span class="inputGroup-splitter"></span>
+						<button type="button" class="button button--link js-rankedPollRemoveOption">
+							<i class="fa fa-times"></i>
+						</button>
+					</div>
+					<div class="inputGroup" data-option-index="1">
+						<input type="text" name="ranked_poll[options][1][text]" class="input"
+							placeholder="{{ phrase('option_text') }}" required />
+						<span class="inputGroup-splitter"></span>
+						<button type="button" class="button button--link js-rankedPollRemoveOption">
+							<i class="fa fa-times"></i>
+						</button>
+					</div>
+				</xf:if>
+			</div>
+
+			<button type="button" class="button button--link js-rankedPollAddOption">
+				<i class="fa fa-plus"></i>
+				{{ phrase('add_option') }}
+			</button>
+		</xf:formrow>
+
+		<hr class="formRowSep" />
+
+		<xf:formrow label="{{ phrase('alebarda_rankedpoll_winner_mode') }}">
+			<xf:radio name="ranked_poll[winner_mode]" value="{$winnerMode}">
+				<xf:option value="single" label="{{ phrase('alebarda_rankedpoll_winner_mode_single') }}">
+					<xf:hint>{{ phrase('alebarda_rankedpoll_winner_mode_single_hint') }}</xf:hint>
+				</xf:option>
+				<xf:option value="top_n" label="{{ phrase('alebarda_rankedpoll_winner_mode_top_n') }}">
+					<xf:hint>{{ phrase('alebarda_rankedpoll_winner_mode_top_n_hint') }}</xf:hint>
+				</xf:option>
+				<xf:option value="seat_allocation" label="{{ phrase('alebarda_rankedpoll_winner_mode_allocation') }}">
+					<xf:hint>{{ phrase('alebarda_rankedpoll_winner_mode_allocation_hint') }}</xf:hint>
+				</xf:option>
+			</xf:radio>
+		</xf:formrow>
+
+		<xf:formrow label="{{ phrase('alebarda_rankedpoll_winner_count') }}"
+			rowclass="js-rankedPollWinnerCountRow"
+			explain="{{ phrase('alebarda_rankedpoll_winner_count_explain') }}">
+			<xf:numberbox name="ranked_poll[winner_count]" value="{$winnerCount}" min="1" max="100" />
+		</xf:formrow>
+
+		<hr class="formRowSep" />
+
+		<xf:textboxrow name="ranked_poll[open_date]" value="{$openDateTime}"
+			type="datetime-local" step="60"
+			label="{{ phrase('alebarda_rankedpoll_open_date') }}"
+			hint="{{ phrase('alebarda_rankedpoll_open_date_hint') }}" />
+
+		<xf:textboxrow name="ranked_poll[close_date]" value="{$closeDateTime}"
+			type="datetime-local" step="60"
+			label="{{ phrase('alebarda_rankedpoll_close_date') }}"
+			hint="{{ phrase('alebarda_rankedpoll_close_date_hint') }}" />
+
+		<hr class="formRowSep" />
+
+		<xf:radiorow name="ranked_poll[results_visibility]" value="{$resultsVisibility}"
+			label="{{ phrase('alebarda_rankedpoll_results_visibility') }}">
+			<xf:option value="realtime" label="{{ phrase('alebarda_rankedpoll_visibility_realtime') }}"
+				hint="{{ phrase('alebarda_rankedpoll_visibility_realtime_hint') }}" />
+			<xf:option value="after_vote" label="{{ phrase('alebarda_rankedpoll_visibility_after_vote') }}"
+				hint="{{ phrase('alebarda_rankedpoll_visibility_after_vote_hint') }}" />
+			<xf:option value="after_close" label="{{ phrase('alebarda_rankedpoll_visibility_after_close') }}"
+				hint="{{ phrase('alebarda_rankedpoll_visibility_after_close_hint') }}" />
+			<xf:option value="never" label="{{ phrase('alebarda_rankedpoll_visibility_never') }}"
+				hint="{{ phrase('alebarda_rankedpoll_visibility_never_hint') }}" />
+		</xf:radiorow>
+
+		<hr class="formRowSep" />
+
+		<xf:checkboxrow label="{{ phrase('alebarda_rankedpoll_settings') }}">
+			<xf:option name="ranked_poll[show_voter_list]" value="1"
+				label="{{ phrase('alebarda_rankedpoll_show_voter_list') }}"
+				hint="{{ phrase('alebarda_rankedpoll_show_voter_list_hint') }}"
+				selected="{$showVoterList}" />
+
+			<xf:option name="ranked_poll[allow_vote_change]" value="1"
+				label="{{ phrase('alebarda_rankedpoll_allow_vote_change') }}"
+				hint="{{ phrase('alebarda_rankedpoll_allow_vote_change_hint') }}"
+				selected="{$allowVoteChange}" />
+
+			<xf:option name="ranked_poll[require_all_ranked]" value="1"
+				label="{{ phrase('alebarda_rankedpoll_require_all_ranked') }}"
+				hint="{{ phrase('alebarda_rankedpoll_require_all_ranked_hint') }}"
+				selected="{$requireAllRanked}" />
+		</xf:checkboxrow>
+	</div>
+</div>
+
+<xf:js>
+(function() {
+	var minOptionsMessage = '{{ phrase('alebarda_rankedpoll_min_two_options')|escape('js') }}';
+	var optionPlaceholder = '{{ phrase('option_text')|escape('js') }}';
+
+	function getContainer(target) {
+		return target ? target.closest('.js-rankedPollThread') : null;
+	}
+
+	function getOptionsContainer(container) {
+		return container ? container.querySelector('.js-rankedPollOptions') : null;
+	}
+
+	function getNextIndex(container) {
+		var current = parseInt(container.dataset.rankedPollIndex || '0', 10);
+		if (!current) {
+			var optionsContainer = getOptionsContainer(container);
+			current = optionsContainer ? optionsContainer.querySelectorAll('.inputGroup').length : 0;
+		}
+		container.dataset.rankedPollIndex = current;
+		return current;
+	}
+
+	function updateWinnerCount(container) {
+		var row = container.querySelector('.js-rankedPollWinnerCountRow');
+		if (!row) {
+			return;
+		}
+
+		var selected = container.querySelector('input[name="ranked_poll[winner_mode]"]:checked');
+		var mode = selected ? selected.value : 'single';
+		row.style.display = (mode === 'single') ? 'none' : '';
+	}
+
+	function updateEnabled(container) {
+		var checkbox = container.querySelector('input[name="ranked_poll[enabled]"]');
+		var fields = container.querySelector('.js-rankedPollFields');
+		if (!checkbox || !fields) {
+			return;
+		}
+		fields.style.display = checkbox.checked ? '' : 'none';
+	}
+
+	document.addEventListener('click', function(event) {
+		var addButton = event.target.closest('.js-rankedPollAddOption');
+		if (addButton) {
+			var container = getContainer(addButton);
+			var optionsContainer = getOptionsContainer(container);
+			if (!optionsContainer) {
+				return;
+			}
+
+			var index = getNextIndex(container);
+			var wrapper = document.createElement('div');
+			wrapper.className = 'inputGroup';
+			wrapper.setAttribute('data-option-index', index);
+			wrapper.innerHTML = ''
+				+ '<input type="text" name="ranked_poll[options][' + index + '][text]" class="input"'
+				+ ' placeholder="' + optionPlaceholder + '" required />'
+				+ '<span class="inputGroup-splitter"></span>'
+				+ '<button type="button" class="button button--link js-rankedPollRemoveOption">'
+				+ '<i class="fa fa-times"></i>'
+				+ '</button>';
+
+			optionsContainer.appendChild(wrapper);
+			container.dataset.rankedPollIndex = index + 1;
+			return;
+		}
+
+		var removeButton = event.target.closest('.js-rankedPollRemoveOption');
+		if (removeButton) {
+			var removeContainer = getContainer(removeButton);
+			var removeOptions = getOptionsContainer(removeContainer);
+			if (!removeOptions) {
+				return;
+			}
+
+			var groups = removeOptions.querySelectorAll('.inputGroup');
+			if (groups.length <= 2) {
+				alert(minOptionsMessage);
+				return;
+			}
+
+			var group = removeButton.closest('.inputGroup');
+			if (group) {
+				group.remove();
+			}
+		}
+	});
+
+	document.addEventListener('change', function(event) {
+		if (event.target && event.target.name === 'ranked_poll[winner_mode]') {
+			var container = getContainer(event.target);
+			if (container) {
+				updateWinnerCount(container);
+			}
+		}
+
+		if (event.target && event.target.name === 'ranked_poll[enabled]') {
+			var toggleContainer = getContainer(event.target);
+			if (toggleContainer) {
+				updateEnabled(toggleContainer);
+			}
+		}
+	});
+
+	var container = document.querySelector('.js-rankedPollThread');
+	if (container) {
+		updateWinnerCount(container);
+		updateEnabled(container);
+	}
+})();
+</xf:js>

@@ -1,0 +1,477 @@
+// ============================================
+// Ranked Poll - Main Voting Interface
+// ============================================
+
+.rankedPoll-rankings {
+	display: flex;
+	gap: 16px;
+	flex-wrap: wrap;
+	margin-bottom: @xf-paddingMedium;
+}
+
+.rankedPoll-rankingsCol {
+	flex: 1 1 280px;
+	min-width: 240px;
+}
+
+.rankedPoll-rankingsCol--unranked {
+	.rankedPoll-list {
+		background: fadeout(@xf-contentAltBg, 50%);
+		border-style: dashed;
+	}
+}
+
+.rankedPoll-rankingsHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	margin-bottom: 8px;
+
+	.block-minorHeader {
+		margin: 0;
+		font-size: @xf-fontSizeNormal;
+	}
+}
+
+.rankedPoll-list {
+	list-style: none;
+	margin: 0;
+	padding: 4px;
+	border: 1px solid @xf-borderColor;
+	border-radius: @xf-borderRadiusMedium;
+	background: @xf-contentAltBg;
+	min-height: 56px;
+	max-height: 420px;
+	overflow-y: auto;
+	transition: border-color 0.2s ease, background-color 0.2s ease;
+
+	&:empty {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: @xf-textColorMuted;
+		font-style: italic;
+
+		&::after {
+			content: attr(data-empty-text);
+		}
+	}
+}
+
+.rankedPoll-list--ranked {
+	border-color: fadeout(@xf-linkColor, 60%);
+	border-width: 2px;
+	background: fadeout(@xf-linkColor, 96%);
+}
+
+.rankedPoll-list--unranked {
+	.rankedPoll-item {
+		background: @xf-contentAltBg;
+		opacity: 0.8;
+	}
+}
+
+.rankedPoll-item {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 14px 16px;
+	margin-bottom: 10px;
+	border: 2px solid @xf-borderColor;
+	border-radius: @xf-borderRadiusLarge;
+	cursor: grab;
+	background: @xf-contentBg;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+	transition: all 0.2s ease;
+	user-select: none;
+	touch-action: none;
+	position: relative;
+
+	&:last-child {
+		margin-bottom: 0;
+	}
+
+	// Альтернирующие цвета для лучшего различия
+	&:nth-child(odd) {
+		background: @xf-contentBg;
+	}
+
+	&:nth-child(even) {
+		background: fadeout(@xf-contentAltBg, 30%);
+	}
+
+	&:hover {
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+		border-color: @xf-linkColor;
+		transform: translateY(-3px) scale(1.01);
+
+		.rankedPoll-grip {
+			opacity: 1;
+			color: @xf-linkColor;
+		}
+	}
+
+	&:active, &.is-touching {
+		cursor: grabbing;
+		border-color: @xf-linkColor;
+		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+	}
+
+	&.is-dragging {
+		opacity: 0.85;
+		transform: scale(1.08) rotate(3deg);
+		box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+		z-index: 1000;
+		border-color: @xf-linkColor;
+		border-width: 3px;
+		background: linear-gradient(135deg, lighten(@xf-linkColor, 48%), lighten(@xf-linkColor, 45%));
+	}
+}
+
+.rankedPoll-grip {
+	flex-shrink: 0;
+	color: @xf-textColorMuted;
+	font-size: @xf-fontSizeLarge;
+	opacity: 0.5;
+	transition: opacity 0.2s ease;
+	cursor: grab;
+	line-height: 1;
+
+	i {
+		display: block;
+	}
+
+	.rankedPoll-item:active &,
+	.rankedPoll-item.is-touching &,
+	.rankedPoll-item.is-dragging & {
+		cursor: grabbing;
+	}
+}
+
+.rankedPoll-placeholder {
+	border: 1px dashed @xf-borderColor;
+	background: @xf-contentAltBg;
+	margin: 4px 8px;
+	border-radius: @xf-borderRadiusMedium;
+}
+
+.rankedPoll-rank {
+	font-weight: 700;
+	color: @xf-textColorFeature;
+	min-width: 38px;
+	text-align: center;
+	font-size: 1.1em;
+	flex-shrink: 0;
+	background: fadeout(@xf-linkColor, 90%);
+	border-radius: @xf-borderRadiusSmall;
+	padding: 4px 8px;
+	line-height: 1;
+
+	.rankedPoll-item:hover & {
+		background: fadeout(@xf-linkColor, 80%);
+		color: @xf-linkColor;
+	}
+
+	.rankedPoll-item.is-dragging & {
+		background: @xf-linkColor;
+		color: #fff;
+	}
+}
+
+.rankedPoll-itemText {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+}
+
+.rankedPoll-itemTitle {
+	font-weight: 600;
+	color: @xf-textColorFeature;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.rankedPoll-itemDesc {
+	color: @xf-textColorMuted;
+	font-size: @xf-fontSizeSmall;
+	margin-top: 2px;
+	line-height: 1.4;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+.rankedPoll-unrank {
+	padding: 4px 8px;
+	opacity: 0;
+	transition: opacity 0.2s ease;
+	flex-shrink: 0;
+	color: @xf-textColorMuted;
+
+	&:hover {
+		color: @xf-errorColor;
+	}
+
+	.rankedPoll-item:hover & {
+		opacity: 1;
+	}
+}
+
+.rankedPoll-reset {
+	flex-shrink: 0;
+}
+
+.rankedPoll-hint {
+	color: @xf-textColorMuted;
+	font-style: italic;
+	font-size: @xf-fontSizeSmall;
+	padding: @xf-paddingSmall @xf-paddingMedium;
+	background: fadeout(@xf-linkColor, 90%);
+	border-left: 3px solid @xf-linkColor;
+	border-radius: @xf-borderRadiusSmall;
+
+	&::before {
+		content: '\f05a';
+		font-family: 'Font Awesome 5 Free';
+		font-weight: 900;
+		margin-right: 0.5em;
+		opacity: 0.7;
+	}
+}
+
+// ============================================
+// Results - First Choice Share Bars
+// ============================================
+
+.rankedPoll-bars {
+	display: grid;
+	gap: 12px;
+	padding: @xf-paddingMedium 0;
+}
+
+.rankedPoll-barRow {
+	display: grid;
+	grid-template-columns: minmax(140px, 220px) 1fr auto;
+	gap: 12px;
+	align-items: center;
+}
+
+.rankedPoll-barLabel {
+	font-weight: 500;
+	color: @xf-textColorFeature;
+	font-size: @xf-fontSizeSmall;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.rankedPoll-barTrack {
+	background: @xf-contentAltBg;
+	border: 1px solid @xf-borderColorLight;
+	border-radius: @xf-borderRadiusMedium;
+	height: 24px;
+	overflow: hidden;
+	position: relative;
+	box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.rankedPoll-barFill {
+	background: @xf-linkColor;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	padding: 0 8px;
+	color: #fff;
+	font-size: @xf-fontSizeSmaller;
+	font-weight: 700;
+	min-width: 0;
+	transition: width 0.3s ease;
+	position: relative;
+
+	&:empty {
+		min-width: 0;
+		padding: 0;
+	}
+}
+
+.rankedPoll-barPct {
+	line-height: 1;
+	white-space: nowrap;
+	text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+
+.rankedPoll-barPctOutside {
+	font-size: @xf-fontSizeSmaller;
+	color: @xf-textColorMuted;
+	margin-left: 6px;
+	font-weight: 600;
+}
+
+.rankedPoll-barValue {
+	font-size: @xf-fontSizeSmall;
+	color: @xf-textColorMuted;
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+	min-width: 50px;
+	text-align: right;
+}
+
+// Table integration
+.dataList {
+	.rankedPoll-barTrack {
+		margin: 0;
+	}
+}
+
+// ============================================
+// Pairwise Matrix
+// ============================================
+
+.rankedPoll-matrixWrapper {
+	display: block;
+	max-width: 100%;
+	overflow-x: auto;
+	overflow-y: hidden;
+	margin: 0;
+	padding: 0;
+	-webkit-overflow-scrolling: touch;
+
+	@media (max-width: @xf-responsiveMedium) {
+		margin: 0;
+		padding: 0;
+	}
+}
+
+.rankedPoll-matrix {
+	min-width: 100%;
+	width: max-content;
+	white-space: nowrap;
+
+	th, td {
+		min-width: 80px;
+		max-width: 150px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.rankedPoll-matrixCell--sticky {
+		position: sticky;
+		left: 0;
+		z-index: 10;
+		background: @xf-contentBg;
+		box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
+
+		&::after {
+			content: '';
+			position: absolute;
+			right: 0;
+			top: 0;
+			bottom: 0;
+			width: 1px;
+			background: @xf-borderColor;
+		}
+	}
+
+	thead .rankedPoll-matrixCell--sticky {
+		z-index: 11;
+	}
+}
+
+// ============================================
+// Countdown Timer
+// ============================================
+
+.rankedPoll-countdown {
+	display: inline-block;
+	padding: 2px 8px;
+	background: fadeout(@xf-linkColor, 85%);
+	border-radius: @xf-borderRadiusSmall;
+	color: @xf-linkColor;
+	font-weight: 600;
+	font-size: @xf-fontSizeSmaller;
+	font-variant-numeric: tabular-nums;
+	min-width: 60px;
+	text-align: center;
+
+	&:empty {
+		display: none;
+	}
+}
+
+// ============================================
+// Responsive Design
+// ============================================
+
+@media (max-width: @xf-responsiveMedium) {
+	.rankedPoll-rankings {
+		flex-direction: column;
+	}
+
+	.rankedPoll-rankingsCol {
+		min-width: 100%;
+	}
+
+	.rankedPoll-barRow {
+		grid-template-columns: 1fr;
+		gap: 8px;
+	}
+
+	.rankedPoll-barLabel {
+		white-space: normal;
+	}
+
+	.rankedPoll-barValue {
+		text-align: left;
+	}
+
+	.rankedPoll-item {
+		padding: 14px 12px;
+		gap: 12px;
+		margin-bottom: 8px;
+	}
+
+	.rankedPoll-grip {
+		opacity: 0.8;
+		font-size: 1.2em;
+		touch-action: none;
+	}
+
+	.rankedPoll-rank {
+		min-width: 32px;
+		font-size: @xf-fontSizeNormal;
+	}
+
+	.rankedPoll-itemTitle {
+		white-space: normal;
+		-webkit-line-clamp: 3;
+		-webkit-box-orient: vertical;
+		display: -webkit-box;
+	}
+
+	.rankedPoll-list {
+		padding: 6px;
+		min-height: 80px;
+	}
+
+	.rankedPoll-hint {
+		display: block;
+	}
+}
+
+@media (max-width: @xf-responsiveNarrow) {
+	.rankedPoll-list {
+		max-height: 320px;
+	}
+
+	.rankedPoll-barTrack {
+		height: 20px;
+	}
+
+	.rankedPoll-hint {
+		font-size: @xf-fontSizeSmaller;
+	}
+}

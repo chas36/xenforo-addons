@@ -1,0 +1,9 @@
+{
+    "template": "thread_type_fields_poll",
+    "description": "Add ranked poll fields to poll thread type",
+    "execution_order": 10,
+    "enabled": true,
+    "action": "preg_replace",
+    "find": "#(<xf:macro id=\"poll_macros::add_edit_inputs\"[^>]+/>)#",
+    "replace": "$1\n\n<xf:include template=\"rankedpoll_thread_tab\" />"
+}

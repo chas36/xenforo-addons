@@ -1,0 +1,11 @@
+{
+    "route_type": "public",
+    "route_prefix": "ranked-polls",
+    "sub_name": "",
+    "format": ":int<poll_id>/:action",
+    "build_class": "",
+    "build_method": "",
+    "controller": "Alebarda\\RankedPollStandalone:Poll",
+    "context": "",
+    "action_prefix": ""
+}

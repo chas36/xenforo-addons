@@ -1,0 +1,9 @@
+{
+    "event_id": "entity_post_save",
+    "execute_order": 10,
+    "callback_class": "Alebarda\\RankedPollStandalone\\Listener",
+    "callback_method": "threadEntityPostSave",
+    "active": true,
+    "hint": "XF:Thread",
+    "description": "Create or update ranked poll from thread form"
+}
